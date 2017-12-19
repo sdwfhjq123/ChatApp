@@ -26,6 +26,7 @@
         <activity android:name=".activity.LoginActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -37,7 +38,9 @@
             android:windowSoftInputMode="stateHidden|adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
+
                 <category android:name="android.intent.category.DEFAULT" />
+
                 <data
                     android:host="com.yinhao.chatapp"
                     android:pathPrefix="/conversationlist"
@@ -45,7 +48,7 @@
             </intent-filter>
         </activity>
 
-        <!--会话界面-->
+        <!-- 会话界面 -->
         <activity
             android:name=".activity.ConversationActivity"
             android:parentActivityName=".activity.HomeActivity"
@@ -53,7 +56,9 @@
             android:windowSoftInputMode="stateHidden|adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
+
                 <category android:name="android.intent.category.DEFAULT" />
+
                 <data
                     android:host="com.yinhao.chatapp"
                     android:pathPrefix="/conversation/"
@@ -137,6 +142,7 @@
             android:value="c9kqb3rdcm0tj" />
 
         <activity android:name=".activity.HomeActivity" />
+        <activity android:name=".activity.AddFriendActivity"></activity>
     </application>
 
 </manifest>

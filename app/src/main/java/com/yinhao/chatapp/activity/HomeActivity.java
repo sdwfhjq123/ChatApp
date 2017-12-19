@@ -1,6 +1,7 @@
 package com.yinhao.chatapp.activity;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.support.v7.app.AppCompatActivity;
@@ -185,7 +186,8 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                 mViewPager.setCurrentItem(2);
                 break;
             case R.id.add_friends_linearlayout:
-                Toast.makeText(this, "添加好友", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(this, "添加好友", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(this, AddFriendActivity.class));
                 break;
         }
         //点击PopWindow的item后,关闭此PopWindow
