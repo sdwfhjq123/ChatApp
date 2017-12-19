@@ -1,6 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#3F51B5</color>
-    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorPrimary">#38393e</color>
+    <color name="colorPrimaryDark">#2f3034</color>
     <color name="colorAccent">#FF4081</color>
+
+    <color name="rb_text_color_selector">#5988be</color><!-- 选中颜色文字 -->
+    <color name="rb_text_color_normal">#4a4a4a</color><!-- 未选中颜色文字 -->
+
+    <color name="title_bg_color">#5988be</color><!-- 标题的背景颜色 -->
+
+    <color name="bg_tab_pressed">#665988be</color>
+    <color name="bg_tab_normal">#00000000</color>
+
+    <color name="tab_text_color_selected">#ff5988be</color><!-- tab选中文字颜色 -->
+    <color name="tab_text_color_normal">#3b3b3b</color><!-- tab未选中文字颜色 -->
+    <color name="card_view_bg">#ffffff</color><!-- tab未选中文字颜色 -->
 </resources>

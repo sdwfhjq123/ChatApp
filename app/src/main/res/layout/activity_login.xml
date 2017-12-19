@@ -1,19 +1,198 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.yinhao.chatapp.activity.LoginActivity">
+    android:background="#f1f3f3"
+    android:orientation="vertical">
 
     <TextView
-        android:id="@+id/tv"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello World!"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:id="@+id/num_textview"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="4"
+        android:gravity="bottom|right"
+        android:padding="15dp"
+        android:singleLine="true"
+        android:textColor="#000"
+        android:textSize="35sp"
+        tools:text="1" />
 
-</android.support.constraint.ConstraintLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="6"
+        android:background="#fafbfc"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <TextView
+                android:id="@+id/ac_textview"
+                style="@style/NumTextView"
+                android:text="AC"
+                android:textColor="#eb7e43" />
+
+            <ImageButton
+                android:id="@+id/backspace_textview"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@null"
+                android:src="@mipmap/ic_launcher" />
+
+            <TextView
+                android:id="@+id/divide_textview"
+                style="@style/NumTextView"
+                android:text="/" />
+
+            <TextView
+                android:id="@+id/ride_textview"
+                style="@style/NumTextView"
+                android:text="×" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <TextView
+                android:id="@+id/seven_textview"
+                style="@style/NumTextView"
+                android:text="7" />
+
+            <TextView
+                android:id="@+id/eight_textview"
+                style="@style/NumTextView"
+                android:text="8" />
+
+            <TextView
+                android:id="@+id/nine_textview"
+                style="@style/NumTextView"
+                android:text="9" />
+
+            <TextView
+                android:id="@+id/minus_textview"
+                style="@style/NumTextView"
+                android:text="—" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <TextView
+                android:id="@+id/four_textview"
+                style="@style/NumTextView"
+                android:text="4" />
+
+            <TextView
+                android:id="@+id/five_textview"
+                style="@style/NumTextView"
+                android:text="5" />
+
+            <TextView
+                android:id="@+id/six_textview"
+                style="@style/NumTextView"
+                android:text="6" />
+
+            <TextView
+                android:id="@+id/plus_textview"
+                style="@style/NumTextView"
+                android:text="+" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="2">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="3"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1">
+
+                    <TextView
+                        android:id="@+id/one_textview"
+                        style="@style/NumTextView"
+                        android:text="1" />
+
+                    <TextView
+                        android:id="@+id/two_textview"
+                        style="@style/NumTextView"
+                        android:text="2" />
+
+                    <TextView
+                        android:id="@+id/three_textview"
+                        style="@style/NumTextView"
+                        android:text="3" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1">
+
+                    <TextView
+                        android:id="@+id/percent_textview"
+                        style="@style/NumTextView"
+                        android:text="%" />
+
+                    <TextView
+                        android:id="@+id/zero_textview"
+                        style="@style/NumTextView"
+                        android:text="0" />
+
+                    <TextView
+                        android:id="@+id/dot_textview"
+                        style="@style/NumTextView"
+                        android:text="." />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/equal_linearlayout"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="#eb7e43"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="="
+                    android:textColor="#ffffff"
+                    android:textSize="45sp" />
+
+            </LinearLayout>
+        </LinearLayout>
+
+
+    </LinearLayout>
+
+</LinearLayout>
