@@ -1,34 +1,31 @@
 package com.yinhao.chatapp.activity;
 
 import android.annotation.SuppressLint;
-import android.graphics.drawable.Drawable;
+import android.graphics.Rect;
+import android.graphics.drawable.ColorDrawable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.net.Uri;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.support.v7.widget.MenuPopupWindow;
-import android.support.v7.widget.PopupMenu;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.support.v7.widget.Toolbar;
+import android.view.Gravity;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.Button;
+import android.view.ViewGroup;
+import android.widget.PopupWindow;
 import android.widget.RadioButton;
 import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import io.rong.imkit.MainActivity;
 import io.rong.imkit.fragment.ConversationListFragment;
 import io.rong.imlib.model.Conversation;
 
 import com.yinhao.chatapp.R;
 import com.yinhao.chatapp.fragment.FriendFragment;
 import com.yinhao.chatapp.fragment.HomeFragment;
-import com.yinhao.chatapp.view.MenuPopwindow;
 
 
 public class HomeActivity extends AppCompatActivity implements View.OnClickListener {
@@ -42,6 +39,9 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     private RadioButton mMsgButton;
     private RadioButton mMyButton;
     private RadioButton mContactButton;
+
+    private Toolbar mToolbar;
+    private PopupWindow mPopupWindow;
 
     @SuppressLint("ResourceAsColor")
     @Override
@@ -104,42 +104,49 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         mMsgButton.setOnClickListener(this);
         mContactButton.setOnClickListener(this);
         mMyButton.setOnClickListener(this);
-    }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main_title_menu, menu);
-        getSupportActionBar().setTitle("微信");
-        return super.onCreateOptionsMenu(menu);
-    }
+        mToolbar = (Toolbar) findViewById(R.id.tool_bar);
+        //取代原本的actionBar
+        setSupportActionBar(mToolbar);
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.add_friends:
-                View itemActionView = item.getActionView();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }
-
-    private void showPopup(View view) {
-        int[] icons = {R.mipmap.ic_add_friend};
-        final String[] texts = {"添加好友"};
-        List<MenuPopwindow.MenuPopwindowBean> list = new ArrayList<>();
-        for (int i = 0; i < icons.length; i++) {
-            list.add(new MenuPopwindow.MenuPopwindowBean(icons[i], texts[i]));
-        }
-
-        MenuPopwindow pw = new MenuPopwindow(HomeActivity.this, list);
-        pw.setOnItemClick(new AdapterView.OnItemClickListener() {
+        mToolbar.findViewById(R.id.add_friends_button).setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Toast.makeText(HomeActivity.this, texts[position], Toast.LENGTH_SHORT).show();
+            public void onClick(View view) {
+                popUpMyOverflow();
             }
         });
-        pw.showPopupWindow(view);//点击右上角的那个button
+    }
+
+    /**
+     * 弹出自定义的popWindow
+     */
+    public void popUpMyOverflow() {
+        //获取状态栏高度
+        Rect frame = new Rect();
+        getWindow().getDecorView().getWindowVisibleDisplayFrame(frame);
+        //状态栏高度+toolbar的高度
+        int yOffset = frame.top + mToolbar.getHeight();
+        if (null == mPopupWindow) {
+            //初始化PopupWindow的布局
+            View popView = getLayoutInflater().inflate(R.layout.list_item_pop_menu, null);
+            //popView即popupWindow的布局，ture设置focusAble.
+            mPopupWindow = new PopupWindow(popView,
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT, true);
+            //必须设置BackgroundDrawable后setOutsideTouchable(true)才会有效
+            mPopupWindow.setBackgroundDrawable(new ColorDrawable());
+            //点击外部关闭。
+            mPopupWindow.setOutsideTouchable(true);
+            //设置一个动画。
+            mPopupWindow.setAnimationStyle(android.R.style.Animation_Dialog);
+            //设置Gravity，让它显示在右上角。
+            mPopupWindow.showAtLocation(mToolbar, Gravity.RIGHT | Gravity.TOP, 20, yOffset);
+            //设置item的点击监听
+            popView.findViewById(R.id.add_friends_linearlayout).setOnClickListener(this);
+        } else {
+            mPopupWindow.showAtLocation(mToolbar, Gravity.RIGHT | Gravity.TOP, 20, yOffset);
+        }
+
     }
 
     private Fragment initConversationList() {
@@ -177,6 +184,13 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.rb_me:
                 mViewPager.setCurrentItem(2);
                 break;
+            case R.id.add_friends_linearlayout:
+                Toast.makeText(this, "添加好友", Toast.LENGTH_SHORT).show();
+                break;
+        }
+        //点击PopWindow的item后,关闭此PopWindow
+        if (null != mPopupWindow && mPopupWindow.isShowing()) {
+            mPopupWindow.dismiss();
         }
     }
 }
