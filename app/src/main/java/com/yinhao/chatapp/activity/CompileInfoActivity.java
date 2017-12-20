@@ -4,6 +4,7 @@ import android.Manifest;
 import android.annotation.TargetApi;
 import android.content.ContentUris;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
@@ -19,6 +20,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -28,19 +30,36 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.yinhao.chatapp.R;
+import com.yinhao.chatapp.utils.ConstantValue;
+import com.yinhao.chatapp.utils.HttpUtils;
 import com.yinhao.chatapp.utils.PictureUtils;
+import com.yinhao.chatapp.utils.Prefs;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import javax.security.auth.login.LoginException;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.Response;
 
 /**
  * 输入昵称时，跳转到昵称修改页面，ChangeNameActivity;
@@ -52,6 +71,7 @@ public class CompileInfoActivity extends AppCompatActivity {
     private static final int REQUEST_OPEN_CAMERA = 2;
     private static final int REQUEST_GET_ALBUM = 3;
     private static final int REQUEST_GET_CAMERA = 4;
+    private File mSubmitPicture;
 
     public static Intent newInstance(Context context) {
         Intent intent = new Intent(context, CompileInfoActivity.class);
@@ -61,6 +81,9 @@ public class CompileInfoActivity extends AppCompatActivity {
     private Toolbar mToolbar;
     private LinearLayout mCompileHead;
     private ImageView mHeadImage;
+    private LinearLayout mCompileName;
+    private TextView mNameText;
+    private TextView mUserIdText;
 
     private File mPhotoFile;
 
@@ -73,6 +96,9 @@ public class CompileInfoActivity extends AppCompatActivity {
 
         initToolbar();
 
+        //初始化信息
+        initData();
+
         mCompileHead = (LinearLayout) findViewById(R.id.compile_head_linearlayout);
         mCompileHead.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -84,6 +110,88 @@ public class CompileInfoActivity extends AppCompatActivity {
 
         //头像imageview
         mHeadImage = (ImageView) findViewById(R.id.head_image);
+        mUserIdText = (TextView) findViewById(R.id.user_id_text);
+
+        //编辑昵称
+        mCompileName = (LinearLayout) findViewById(R.id.compile_name_linearlayout);
+        mNameText = (TextView) findViewById(R.id.name_text);
+        final View dialogView = View.inflate(CompileInfoActivity.this, R.layout.dialog_et, null);
+        final EditText dialogEditText = (EditText) dialogView.findViewById(R.id.dialog_edit_text);
+        mCompileName.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(CompileInfoActivity.this);
+                builder.setTitle("设置昵称");
+                builder.setView(dialogView);
+                builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mNameText.setText("");
+                    }
+                });
+                builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        //将输入框获取到的昵称赋值给nameText
+                        Map<String, String> map = new HashMap<>();
+                        map.put("id", Prefs.getString(CompileInfoActivity.this, Prefs.PREF_KEY_LOGIN_ID));
+                        map.put("nikeName", mNameText.getText().toString());
+                        HttpUtils.handleInfoOnServer("/user/getUserById", map, new Callback() {
+                            @Override
+                            public void onFailure(Call call, IOException e) {
+                                Log.e(TAG, "修改头像失败");
+                            }
+
+                            @Override
+                            public void onResponse(Call call, Response response) throws IOException {
+                                Log.i(TAG, "修改头像成功");
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        mNameText.setText(dialogEditText.getText().toString());
+                                    }
+                                });
+                            }
+                        });
+                    }
+                });
+                builder.show();
+            }
+        });
+    }
+
+    /**
+     * 初始化个人信息
+     */
+    private void initData() {
+        Map<String, String> map = new HashMap<>();
+        map.put("userId", Prefs.getString(this, Prefs.PREF_KEY_ACCOUNT));
+        HttpUtils.handleInfoOnServer("/user/getUserById", map, new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                String result = response.body().string();
+                try {
+                    JSONObject jsonObject = new JSONObject(result);
+                    String id = jsonObject.getString("id");
+                    String nikeName = jsonObject.getString("nikeName");
+                    String portraitUri = jsonObject.getString("portraitUri");
+                    //将登录成功返回的userId保存
+                    Prefs.putString(CompileInfoActivity.this, Prefs.PREF_KEY_NIKE_NAME, nikeName);
+                    Prefs.putString(CompileInfoActivity.this, Prefs.PREF_KEY_HEAD_IMAGE_URL, portraitUri);
+                    Prefs.putString(CompileInfoActivity.this, Prefs.PREF_KEY_LOGIN_ID, id);
+                    mNameText.setText(nikeName);
+                    Glide.with(CompileInfoActivity.this).load(ConstantValue.URL + portraitUri).into(mHeadImage);
+                    mUserIdText.setText(Prefs.getString(CompileInfoActivity.this, Prefs.PREF_KEY_ACCOUNT));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
     @Override
@@ -125,7 +233,9 @@ public class CompileInfoActivity extends AppCompatActivity {
                     //Uri uri = data.getData();
                     Uri uri = FileProvider.getUriForFile(this, "com.yinhao.chatapp.FileProvider", mPhotoFile);
                     Bitmap bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(uri));
-                    savePicture(bitmap);
+                    mSubmitPicture = savePicture(bitmap);
+                    //上传头像
+                    submitHeadFile();
                     mHeadImage.setImageBitmap(bitmap);
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
@@ -134,10 +244,48 @@ public class CompileInfoActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * 上传头像
+     */
+    private void submitHeadFile() {
+        //修改头像
+        if (mSubmitPicture.exists()) {
+            HttpUtils.handleImageOnServer(mSubmitPicture,
+                    "/user/modify",
+                    Prefs.getString(CompileInfoActivity.this, Prefs.PREF_KEY_LOGIN_ID),
+                    new Callback() {
+                        @Override
+                        public void onFailure(Call call, IOException e) {
+                            Log.e(TAG, "上传失败");
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(CompileInfoActivity.this, "修改头像失败", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        }
+
+                        @Override
+                        public void onResponse(Call call, Response response) throws IOException {
+                            String result = response.body().string();
+                            Log.i(TAG, "上传成功" + result);
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(CompileInfoActivity.this, "修改头像成功", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        }
+                    });
+        }
+    }
+
     private void displayImage(String path) {
         Bitmap bm = PictureUtils.getScaledBitmap(path, this);
+        mSubmitPicture = savePicture(bm);
         mHeadImage.setImageBitmap(bm);
-        File file = savePicture(bm);
+        //上传头像
+        submitHeadFile();
     }
 
     /**

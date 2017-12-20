@@ -10,8 +10,24 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.yinhao.chatapp.R;
 import com.yinhao.chatapp.activity.CompileInfoActivity;
+import com.yinhao.chatapp.utils.ConstantValue;
+import com.yinhao.chatapp.utils.HttpUtils;
+import com.yinhao.chatapp.utils.Prefs;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
+import de.hdodenhof.circleimageview.CircleImageView;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.Response;
 
 /**
  * Created by hp on 2017/12/18.
@@ -29,7 +45,8 @@ public class HomeFragment extends Fragment {
     }
 
     private LinearLayout mCompileInfo;
-
+    private CircleImageView mHeadImage;//head_civ
+    private TextView mNameText;//name_text
 
     @Nullable
     @Override
@@ -41,12 +58,52 @@ public class HomeFragment extends Fragment {
         mCompileInfo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = CompileInfoActivity.newInstance(getActivity(), false);
+                Intent intent = CompileInfoActivity.newInstance(getActivity());
                 startActivity(intent);
             }
         });
 
         return view;
 
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        initData();
+    }
+
+    /**
+     * 初始化个人信息
+     */
+    private void initData() {
+        Map<String, String> map = new HashMap<>();
+        map.put("userId", Prefs.getString(getActivity(), Prefs.PREF_KEY_ACCOUNT));
+        HttpUtils.handleInfoOnServer("/user/getUserById", map, new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                String result = response.body().string();
+                try {
+                    JSONObject jsonObject = new JSONObject(result);
+                    String id = jsonObject.getString("id");
+                    String nikeName = jsonObject.getString("nikeName");
+                    String portraitUri = jsonObject.getString("portraitUri");
+                    //将登录成功返回的userId保存
+                    Prefs.putString(getActivity(), Prefs.PREF_KEY_NIKE_NAME, nikeName);
+                    Prefs.putString(getActivity(), Prefs.PREF_KEY_HEAD_IMAGE_URL, portraitUri);
+                    Prefs.putString(getActivity(), Prefs.PREF_KEY_LOGIN_ID, id);
+                    mNameText.setText(nikeName);
+                    Glide.with(getActivity()).load(ConstantValue.URL + portraitUri).into(mHeadImage);
+                    //mUserIdText.setText(Prefs.getString(getActivity(), Prefs.PREF_KEY_ACCOUNT));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 }

@@ -1,10 +1,25 @@
 {
     "logs": [
         {
-            "outputFile": "F:\\AndroidStudioProjects\\ChatApp\\IMLib\\build\\intermediates\\incremental\\mergeDebugAndroidTestResources\\merged.dir\\values-en\\values-en.xml",
+            "outputFile": "/Users/yinhao/AndroidStudioProjects/project/ChatApp/IMLib/build/intermediates/incremental/mergeDebugAndroidTestResources/merged.dir/values-en/values-en.xml",
             "map": [
                 {
-                    "source": "F:\\AndroidStudioProjects\\ChatApp\\IMLib\\build\\intermediates\\bundles\\debug\\res\\values-en\\values-en.xml",
+                    "source": "/Users/yinhao/AndroidStudioProjects/project/ChatApp/IMLib/build/intermediates/bundles/debug/res/values-en/values-en.xml",
+                    "from": {
+                        "startLines": "2,3,4,5,6,7",
+                        "startColumns": "4,4,4,4,4,4",
+                        "startOffsets": "55,128,216,292,384,463",
+                        "endColumns": "72,87,75,91,78,75",
+                        "endOffsets": "123,211,287,379,458,534"
+                    }
+                }
+            ]
+        },
+        {
+            "outputFile": "/Users/yinhao/AndroidStudioProjects/project/ChatApp/F:\\AndroidStudioProjects\\ChatApp\\IMLib\\build\\intermediates\\incremental\\mergeDebugAndroidTestResources\\merged.dir\\values-en\\values-en.xml",
+            "map": [
+                {
+                    "source": "/Users/yinhao/AndroidStudioProjects/project/ChatApp/F:\\AndroidStudioProjects\\ChatApp\\IMLib\\build\\intermediates\\bundles\\debug\\res\\values-en\\values-en.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7",
                         "startColumns": "4,4,4,4,4,4",

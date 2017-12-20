@@ -2,8 +2,10 @@ package com.yinhao.chatapp.activity;
 
 import android.Manifest;
 import android.annotation.TargetApi;
+import android.app.ProgressDialog;
 import android.content.ContentUris;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -18,24 +20,36 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.yinhao.chatapp.R;
+import com.yinhao.chatapp.utils.HttpUtils;
 import com.yinhao.chatapp.utils.PictureUtils;
+import com.yinhao.chatapp.utils.Prefs;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.Response;
 
 /**
  * 输入昵称时，弹出Dialog
@@ -58,17 +72,20 @@ public class CompleteInfoActivity extends AppCompatActivity {
     private Toolbar mToolbar;
     private LinearLayout mCompileHead;
     private ImageView mHeadImage;
+    private LinearLayout mCompileName;
+    private TextView mNameText;
+
+    private ProgressBar mProgressBar;
+
 
     private File mPhotoFile;
+    private File mSubmitPicture;
     private boolean mIsNeverCompile;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_compile_info);
-
-        //判断是否是完善注册还是修改资料
-
+        setContentView(R.layout.activity_complete_info);
 
         mPhotoFile = new File(getCacheDir(), "head_image.jpg");
 
@@ -85,6 +102,38 @@ public class CompleteInfoActivity extends AppCompatActivity {
 
         //头像imageview
         mHeadImage = (ImageView) findViewById(R.id.head_image);
+        //进度圈
+        mProgressBar = (ProgressBar) findViewById(R.id.progress_bar);
+
+        //编辑昵称
+        mCompileName = (LinearLayout) findViewById(R.id.compile_name_linearlayout);
+        mNameText = (TextView) findViewById(R.id.name_text);
+        final View dialogView = View.inflate(CompleteInfoActivity.this, R.layout.dialog_et, null);
+        final EditText dialogEditText = (EditText) dialogView.findViewById(R.id.dialog_edit_text);
+        mCompileName.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(CompleteInfoActivity.this);
+                builder.setTitle("设置昵称");
+                builder.setView(dialogView);
+                builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mNameText.setText("");
+                        dialog.dismiss();
+                    }
+                });
+                builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        //将输入框获取到的昵称赋值给nameText
+                        mNameText.setText(dialogEditText.getText().toString());
+                        dialog.dismiss();
+                    }
+                });
+                builder.show();
+            }
+        });
     }
 
     @Override
@@ -126,7 +175,7 @@ public class CompleteInfoActivity extends AppCompatActivity {
                     //Uri uri = data.getData();
                     Uri uri = FileProvider.getUriForFile(this, "com.yinhao.chatapp.FileProvider", mPhotoFile);
                     Bitmap bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(uri));
-                    savePicture(bitmap);
+                    mSubmitPicture = savePicture(bitmap);
                     mHeadImage.setImageBitmap(bitmap);
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
@@ -138,7 +187,7 @@ public class CompleteInfoActivity extends AppCompatActivity {
     private void displayImage(String path) {
         Bitmap bm = PictureUtils.getScaledBitmap(path, this);
         mHeadImage.setImageBitmap(bm);
-        File file = savePicture(bm);
+        mSubmitPicture = savePicture(bm);
     }
 
     /**
@@ -325,6 +374,37 @@ public class CompleteInfoActivity extends AppCompatActivity {
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(intent);
                 finish();
+            }
+        });
+
+        //提交完善资料
+        mToolbar.findViewById(R.id.submit_button).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mProgressBar.setVisibility(View.VISIBLE);
+                if ((mSubmitPicture.exists()) && (!TextUtils.isEmpty(mNameText.getText().toString()))) {
+                    HttpUtils.handleCompleteInfoOnServer(mSubmitPicture,
+                            "/user/modify",
+                            mNameText.getText().toString(),
+                            Prefs.getString(CompleteInfoActivity.this, Prefs.PREF_KEY_LOGIN_ID)
+                            , new Callback() {
+                                @Override
+                                public void onFailure(Call call, IOException e) {
+                                    Log.e(TAG, "上传失败");
+                                    mProgressBar.setVisibility(View.GONE);
+                                }
+
+                                @Override
+                                public void onResponse(Call call, Response response) throws IOException {
+                                    String result = response.body().string();
+                                    Log.i(TAG, "上传成功:" + result);
+                                    mProgressBar.setVisibility(View.GONE);
+                                    finish();
+                                }
+                            });
+                } else {
+                    Toast.makeText(CompleteInfoActivity.this, "头像或昵称未完善,请重新编辑", Toast.LENGTH_SHORT).show();
+                }
             }
         });
 

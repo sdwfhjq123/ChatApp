@@ -96,7 +96,7 @@
             android:textSize="16sp" />
 
         <TextView
-            android:id="@+id/id_text"
+            android:id="@+id/user_id_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="10dp"

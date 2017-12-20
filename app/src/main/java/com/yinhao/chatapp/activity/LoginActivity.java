@@ -196,7 +196,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 String info = mNumTextView.getText().toString();
                 if (!(info.contains("\\.") && info.contains("/") && info.contains("\\+") && info.contains("×") && info.contains("-"))) {
                     map.put("command", info);
-                    HttpUtils.handleInfoOnServer("user/register", map, new Callback() {
+                    HttpUtils.handleInfoOnServer("/user/register", map, new Callback() {
                         @Override
                         public void onFailure(Call call, IOException e) {
                             Log.e(TAG, "error net" + e);
@@ -333,11 +333,11 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
      *
      */
     private void login() {
-        String info = mNumTextView.getText().toString();
+        final String info = mNumTextView.getText().toString();
         if (!(info.contains("\\.") && info.contains("/") && info.contains("\\+") && info.contains("×") && info.contains("-"))) {
             Map<String, String> map = new HashMap<>();
             map.put("command", info);
-            HttpUtils.handleInfoOnServer("user/login", map, new Callback() {
+            HttpUtils.handleInfoOnServer("/user/login", map, new Callback() {
                 @Override
                 public void onFailure(Call call, IOException e) {
                     Log.e(TAG, "error net" + e);
@@ -366,8 +366,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    Intent intent = CompileInfoActivity.newInstance(LoginActivity.this, true);
-                                    startActivity(intent);
+                                    startActivity(new Intent(LoginActivity.this, CompleteInfoActivity.class));
                                 }
                             });
                         } else {
@@ -375,6 +374,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                             Prefs.putString(LoginActivity.this, Prefs.PREF_KEY_NIKE_NAME, nikeName);
                             Prefs.putString(LoginActivity.this, Prefs.PREF_KEY_HEAD_IMAGE_URL, headImageUrl);
                             Prefs.putString(LoginActivity.this, Prefs.PREF_KEY_TOKEN, token);
+                            Prefs.putString(LoginActivity.this, Prefs.PREF_KEY_ACCOUNT, info);
                             //保存用户信息到会话列表及界面
                             initUserInfo(loginId, nikeName, headImageUrl);
                             connect(token);

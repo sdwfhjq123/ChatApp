@@ -16,6 +16,7 @@ public class Prefs {
     public static final String PREF_KEY_LOGIN_ID = "user_id";
     public static final String PREF_KEY_HEAD_IMAGE_URL = "head_image";
     public static final String PREF_KEY_NIKE_NAME = "nike_name";
+    public static final String PREF_KEY_ACCOUNT = "account";
 
     public static void putString(Context context, String key, String value) {
         SharedPreferences mPres = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);

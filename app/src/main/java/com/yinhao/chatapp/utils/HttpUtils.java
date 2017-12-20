@@ -1,5 +1,7 @@
 package com.yinhao.chatapp.utils;
 
+import android.util.Log;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
@@ -20,10 +22,13 @@ import okhttp3.Response;
 
 public class HttpUtils {
 
-    public static void handleImageOnServer(File file, String address, Callback callback) {
+    private static final String TAG = "HttpUtils";
+
+    public static void handleImageOnServer(File file, String id, String address, Callback callback) {
         MultipartBody.Builder builder = new MultipartBody.Builder();
         builder.setType(MultipartBody.FORM);
         builder.addFormDataPart("txImg", file.getName(), RequestBody.create(MediaType.parse("image/*"), file));
+        builder.addFormDataPart("id", id);
         RequestBody requestBody = builder.build();
         Request request = new Request.Builder()
                 .post(requestBody)
@@ -44,6 +49,28 @@ public class HttpUtils {
                 .url(ConstantValue.URL + address)
                 .post(formBody)
                 .build();
+        client.newCall(request).enqueue(callback);
+    }
+
+    /**
+     * 完善资料的上传
+     *
+     * @param file     头像
+     * @param address  请求地址
+     * @param nikeName 昵称
+     */
+    public static void handleCompleteInfoOnServer(File file, String address, String nikeName, String id, Callback callback) {
+        MultipartBody.Builder builder = new MultipartBody.Builder();
+        builder.setType(MultipartBody.FORM);
+        builder.addFormDataPart("txImg", file.getName(), RequestBody.create(MediaType.parse("image/*"), file));
+        builder.addFormDataPart("nikeName", nikeName);
+        builder.addFormDataPart("id", id);
+        RequestBody requestBody = builder.build();
+        Request request = new Request.Builder()
+                .post(requestBody)
+                .url(ConstantValue.URL + address)
+                .build();
+        OkHttpClient client = new OkHttpClient();
         client.newCall(request).enqueue(callback);
     }
 }

@@ -14,8 +14,7 @@
         <de.hdodenhof.circleimageview.CircleImageView
             android:id="@+id/head_civ"
             android:layout_width="100dp"
-            android:layout_height="100dp"
-            android:background="#aaa" />
+            android:layout_height="100dp" />
 
         <TextView
             android:id="@+id/name_text"
