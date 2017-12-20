@@ -73,7 +73,6 @@ public class HeaderAndFooterAdapter extends RecyclerView.Adapter<RecyclerView.Vi
     @Override
     public int getItemViewType(int position) {
         int dataItemCount = getContentItemCount();
-        Log.i(TAG, "getItemViewType: ");
         if (mHeaderCount != 0 && position < mHeaderCount) {
             //头部view
             return ITEM_TYPE_HEADER;
@@ -86,7 +85,6 @@ public class HeaderAndFooterAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        Log.i(TAG, "onCreateViewHolder: " + viewType);
         if (viewType == ITEM_TYPE_HEADER) {
             return new HeaderViewHolder(mLayoutInflater, parent);
         } else if (viewType == ITEM_TYPE_FOOTER) {

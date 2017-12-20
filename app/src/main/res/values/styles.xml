@@ -34,4 +34,9 @@
         <item name="android:drawablePadding">2dp</item>
     </style>
 
+    <style name="anim_popup_dir">
+        <item name="android:windowEnterAnimation">@anim/popshow_anim</item>
+        <item name="android:windowExitAnimation">@anim/pophidden_anim</item>
+    </style>
+
 </resources>

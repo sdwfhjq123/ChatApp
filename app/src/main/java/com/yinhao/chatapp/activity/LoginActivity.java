@@ -4,27 +4,41 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.google.gson.Gson;
 import com.yinhao.chatapp.R;
+import com.yinhao.chatapp.VO.LoginVO;
 import com.yinhao.chatapp.global.ChatApplication;
 import com.yinhao.chatapp.model.Friends;
+import com.yinhao.chatapp.utils.HttpUtils;
+import com.yinhao.chatapp.utils.Prefs;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import io.rong.imkit.RongIM;
 import io.rong.imlib.RongIMClient;
 import io.rong.imlib.model.UserInfo;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.Response;
 
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener, RongIM.UserInfoProvider {
 
     private static final String TAG = "LoginActivity";
-    private static final String token = "SOdFE77zr1BcFzozNM3Rf6wP/8LjdbHb241WAFqykOcjyFm/jQVVVupQ1ztzdSXgpco6AJ/+8Rqz51sTnXdCWg==";
     private static final int REQUEST_PLUS = 1;
     private static final int REQUEST_MINUS = 2;
     private static final int REQUEST_RIDE = 3;
@@ -75,13 +89,11 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         initView();
-        initUserInfo();
         RongIM.setUserInfoProvider(this, true);
     }
 
-    private void initUserInfo() {
-        mUserInfo.add(new Friends("123", "联通22", "http://i5.hexunimg.cn/2012-11-07/147694350.jpg"));
-        mUserInfo.add(new Friends("1213", "移动2222", "http://img02.tooopen.com/Download/2010/5/22/20100522103223994012.jpg"));
+    private void initUserInfo(String loginId, String nikeName, String headImageUrl) {
+        mUserInfo.add(new Friends(loginId, nikeName, headImageUrl));
     }
 
     /**
@@ -161,7 +173,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         mPlusTextView.setOnClickListener(this);
         mMinusTextView.setOnClickListener(this);
         mDotTextView.setOnClickListener(this);
-        mPercentTextView.setOnClickListener(this);
         mAcTextView.setOnClickListener(this);
 
         mZeroTextView.setOnClickListener(this);
@@ -176,6 +187,67 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         mNineTextView.setOnClickListener(this);
 
         mEqualLinearLayout.setOnClickListener(this);
+
+        //注册
+        mBackspaceTextView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Map<String, String> map = new HashMap<>();
+                String info = mNumTextView.getText().toString();
+                if (!(info.contains("\\.") && info.contains("/") && info.contains("\\+") && info.contains("×") && info.contains("-"))) {
+                    map.put("command", info);
+                    HttpUtils.handleInfoOnServer("user/register", map, new Callback() {
+                        @Override
+                        public void onFailure(Call call, IOException e) {
+                            Log.e(TAG, "error net" + e);
+                        }
+
+                        @Override
+                        public void onResponse(Call call, Response response) throws IOException {
+                            String result = response.body().string();
+                            try {
+                                final JSONObject jsonObject = new JSONObject(result);
+                                String resultCode = jsonObject.getString("resultCode");
+                                if (resultCode.equals("500")) {
+                                    runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            try {
+                                                Toast.makeText(LoginActivity.this, jsonObject.getString("errorMessage"), Toast.LENGTH_SHORT).show();
+                                            } catch (JSONException e) {
+                                                e.printStackTrace();
+                                            }
+                                        }
+                                    });
+                                } else if (resultCode.equals("200")) {
+                                    runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            Toast.makeText(LoginActivity.this, "注册成功！", Toast.LENGTH_SHORT).show();
+                                            startActivity(new Intent(LoginActivity.this, CompileInfoActivity.class));
+                                            finish();
+                                        }
+                                    });
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
+                } else {
+                    Toast.makeText(LoginActivity.this, "格式不对", Toast.LENGTH_SHORT).show();
+                }
+
+            }
+        });
+
+        //登录
+        mPercentTextView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                login();
+            }
+        });
 
     }
 
@@ -254,26 +326,69 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             case R.id.equal_linearlayout:
                 operation();
                 break;
-            case R.id.percent_textview:
-                //登陆方法
-                login();
-                break;
         }
     }
 
+    /**
+     *
+     */
     private void login() {
         String info = mNumTextView.getText().toString();
-        if (info.contains(".")) {
-            final String[] split = info.split("\\.");
-            Log.i(TAG, "login: " + split[0] + ":" + split[1]);
-            new Thread() {
+        if (!(info.contains("\\.") && info.contains("/") && info.contains("\\+") && info.contains("×") && info.contains("-"))) {
+            Map<String, String> map = new HashMap<>();
+            map.put("command", info);
+            HttpUtils.handleInfoOnServer("user/login", map, new Callback() {
                 @Override
-                public void run() {
-                    super.run();
-                    connect(token);
+                public void onFailure(Call call, IOException e) {
+                    Log.e(TAG, "error net" + e);
                 }
-            }.start();
+
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+                    String result = response.body().string();
+                    //Log.i(TAG, "登录" + result);
+                    Gson gson = new Gson();
+                    final LoginVO loginVO = gson.fromJson(result, LoginVO.class);
+                    if (loginVO.getResultCode().equals("500")) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(LoginActivity.this, "口令不对", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    } else if (loginVO.getResultCode().equals("200")) {
+                        String token = loginVO.getData().getToken();
+                        String loginId = loginVO.getData().getUser().getId();
+                        String nikeName = loginVO.getData().getUser().getNikeName();
+                        String headImageUrl = loginVO.getData().getUser().getPortraitUri();
+                        Prefs.putString(LoginActivity.this, Prefs.PREF_KEY_LOGIN_ID, loginId);
+                        if (TextUtils.isEmpty(token)) {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Intent intent = CompileInfoActivity.newInstance(LoginActivity.this, true);
+                                    startActivity(intent);
+                                }
+                            });
+                        } else {
+                            //将登录成功返回的userId保存
+                            Prefs.putString(LoginActivity.this, Prefs.PREF_KEY_NIKE_NAME, nikeName);
+                            Prefs.putString(LoginActivity.this, Prefs.PREF_KEY_HEAD_IMAGE_URL, headImageUrl);
+                            Prefs.putString(LoginActivity.this, Prefs.PREF_KEY_TOKEN, token);
+                            //保存用户信息到会话列表及界面
+                            initUserInfo(loginId, nikeName, headImageUrl);
+                            connect(token);
+                        }
+
+                    }
+
+                }
+            });
+
+        } else {
+            Toast.makeText(this, "格式不对", Toast.LENGTH_SHORT).show();
         }
+
     }
 
     private void operation() {
