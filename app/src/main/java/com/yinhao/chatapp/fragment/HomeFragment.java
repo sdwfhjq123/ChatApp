@@ -11,11 +11,14 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.yinhao.chatapp.R;
 import com.yinhao.chatapp.activity.CompileInfoActivity;
 import com.yinhao.chatapp.activity.HomeActivity;
+import com.yinhao.chatapp.activity.LoginActivity;
+import com.yinhao.chatapp.utils.CleanMessageUtil;
 import com.yinhao.chatapp.utils.ConstantValue;
 import com.yinhao.chatapp.utils.HttpUtils;
 import com.yinhao.chatapp.utils.Prefs;
@@ -28,6 +31,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import io.rong.imkit.RongIM;
+import io.rong.imkit.userInfoCache.RongUserInfoManager;
+import io.rong.imlib.RongIMClient;
+import io.rong.imlib.model.Conversation;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
@@ -41,6 +48,7 @@ import static android.content.ContentValues.TAG;
 public class HomeFragment extends Fragment {
 
     public static HomeFragment instance = null;//单例模式
+    private LinearLayout mCleanCache;
 
     public static HomeFragment getInstance() {
         if (instance == null) {
@@ -70,6 +78,29 @@ public class HomeFragment extends Fragment {
 
         mNameText = (TextView) view.findViewById(R.id.name_text);
         mHeadImage = (CircleImageView) view.findViewById(R.id.head_image);
+
+        mCleanCache = view.findViewById(R.id.clean_cache_ll);
+        mCleanCache.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                RongIM.getInstance().clearConversations(new RongIMClient.ResultCallback() {
+                    @Override
+                    public void onSuccess(Object o) {
+                        getActivity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(getActivity(), "清理成功", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onError(RongIMClient.ErrorCode errorCode) {
+
+                    }
+                }, Conversation.ConversationType.PRIVATE, Conversation.ConversationType.GROUP);
+            }
+        });
 
         return view;
 
