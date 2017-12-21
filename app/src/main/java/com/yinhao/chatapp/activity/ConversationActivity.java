@@ -10,6 +10,8 @@ import android.view.View;
 
 import com.yinhao.chatapp.R;
 
+import javax.security.auth.login.LoginException;
+
 /**
  * Created by hp on 2017/12/18.
  */
@@ -28,10 +30,18 @@ public class ConversationActivity extends AppCompatActivity {
         String targetId = getIntent().getData().getQueryParameter("targetId");
         //对方 昵称
         mName = getIntent().getData().getQueryParameter("title");
+        Log.i(TAG, "开启会话后得到的昵称" + mName);
 
+        initToolbar();
+
+
+    }
+
+    private void initToolbar() {
         mToolbar = (Toolbar) findViewById(R.id.tool_bar);
+        mToolbar.setTitle(mName);//要在setSupportActionBar方法前设置
         setSupportActionBar(mToolbar);
-        mToolbar.setTitle(mName);
+
         mToolbar.setNavigationIcon(R.drawable.ic_back);
         mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override

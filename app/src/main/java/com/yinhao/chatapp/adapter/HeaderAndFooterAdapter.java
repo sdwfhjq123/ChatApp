@@ -13,7 +13,14 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.yinhao.chatapp.R;
+import com.yinhao.chatapp.VO.FriendVO;
+import com.yinhao.chatapp.VO.FriendVO.FriendData;
+import com.yinhao.chatapp.utils.ConstantValue;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by hp on 2017/12/19.
@@ -29,7 +36,7 @@ public class HeaderAndFooterAdapter extends RecyclerView.Adapter<RecyclerView.Vi
     private static final int ITEM_TYPE_NORMAL = 2;
 
     //模拟数据
-    public String[] texts = {"java", "python", "C++", "Php", ".NET", "js", "Ruby", "Swift", "OC"};
+    private List<FriendData> mList = new ArrayList<>();
 
     private LayoutInflater mLayoutInflater;
     private Context mContext;
@@ -37,16 +44,33 @@ public class HeaderAndFooterAdapter extends RecyclerView.Adapter<RecyclerView.Vi
     private int mHeaderCount = 1;//头部item个数
     private int mFooterCount = 1;//底部item个数
 
-    public HeaderAndFooterAdapter(Context context) {
+    private OnItemClickListener mOnItemClickListener;
+
+    public HeaderAndFooterAdapter(Context context, List<FriendData> friendData) {
         mContext = context;
         mLayoutInflater = LayoutInflater.from(context);
+        mList = friendData;
+    }
+
+    public void setData(List<FriendData> list) {
+        mList = list;
+    }
+
+    public interface OnItemClickListener {
+        void onStartConversationPrivateChat(View v, int position);
+
+        void onStartGroupActivity(View v);
+    }
+
+    public void setOnItemClickListener(OnItemClickListener onItemClickListener) {
+        mOnItemClickListener = onItemClickListener;
     }
 
     /**
      * @return 返回的内容长度
      */
     public int getContentItemCount() {
-        return texts.length;
+        return mList.size();
     }
 
     /**
@@ -98,7 +122,8 @@ public class HeaderAndFooterAdapter extends RecyclerView.Adapter<RecyclerView.Vi
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         if (holder instanceof NormalViewHolder) {
-            ((NormalViewHolder) holder).bind(texts[position - mHeaderCount]);
+            ((NormalViewHolder) holder).bind(mList.get(position - mHeaderCount).getNikeName(),
+                    mList.get(position - mHeaderCount).getPortraitUri());
         }
         if (holder instanceof HeaderViewHolder) {
 
@@ -110,7 +135,7 @@ public class HeaderAndFooterAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 
     @Override
     public int getItemCount() {
-        return texts.length + mHeaderCount + mFooterCount;
+        return mList.size() + mHeaderCount + mFooterCount;
     }
 
     private class HeaderViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
@@ -124,7 +149,8 @@ public class HeaderAndFooterAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 
         @Override
         public void onClick(View v) {
-            Toast.makeText(mContext, "群组", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(mContext, "群组", Toast.LENGTH_SHORT).show();
+            mOnItemClickListener.onStartGroupActivity(v);
         }
     }
 
@@ -143,7 +169,6 @@ public class HeaderAndFooterAdapter extends RecyclerView.Adapter<RecyclerView.Vi
         private ImageView mHeadContactImageView;
         private LinearLayout mContactItem;
 
-        private String text;
 
         public NormalViewHolder(LayoutInflater inflater, ViewGroup parent) {
             super(inflater.inflate(R.layout.list_item_contact, parent, false));
@@ -153,14 +178,16 @@ public class HeaderAndFooterAdapter extends RecyclerView.Adapter<RecyclerView.Vi
             itemView.setOnClickListener(this);
         }
 
-        public void bind(String text) {
-            this.text = text;
-            mContactNameTextView.setText(text);
+        public void bind(String nikeName, String portraitUri) {
+            mContactNameTextView.setText(nikeName);
+            Glide.with(mContext).load(ConstantValue.URL + portraitUri).into(mHeadContactImageView);
         }
 
         @Override
         public void onClick(View v) {
-            Toast.makeText(mContext, text, Toast.LENGTH_SHORT).show();
+            int position = getAdapterPosition() - 1;
+            //Toast.makeText(mContext, text, Toast.LENGTH_SHORT).show();
+            mOnItemClickListener.onStartConversationPrivateChat(v, position);
         }
     }
 

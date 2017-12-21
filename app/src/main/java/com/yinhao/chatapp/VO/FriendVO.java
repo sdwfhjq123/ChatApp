@@ -26,10 +26,20 @@ public class FriendVO {
         this.resultCode = resultCode;
     }
 
-    public class FriendData {
-        private String portraitUri;
+    public static class FriendData {
+
         private String id;
         private String nikeName;
+        private String portraitUri;
+        private String command;
+
+
+        public FriendData(String id, String nikeName, String portraitUri, String command) {
+            this.id = id;
+            this.nikeName = nikeName;
+            this.portraitUri = portraitUri;
+            this.command = command;
+        }
 
         public String getPortraitUri() {
             return portraitUri;
@@ -53,6 +63,14 @@ public class FriendVO {
 
         public void setNikeName(String nikeName) {
             this.nikeName = nikeName;
+        }
+
+        public String getCommand() {
+            return command;
+        }
+
+        public void setCommand(String command) {
+            this.command = command;
         }
     }
 

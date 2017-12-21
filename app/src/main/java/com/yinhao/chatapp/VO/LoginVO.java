@@ -46,9 +46,18 @@ public class LoginVO {
     }
 
     public class UserData {
+        private String commond;
         private String id;
         private String nikeName;
         private String portraitUri;
+
+        public String getCommond() {
+            return commond;
+        }
+
+        public void setCommond(String commond) {
+            this.commond = commond;
+        }
 
         public String getId() {
             return id;

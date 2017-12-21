@@ -14,6 +14,7 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
@@ -79,7 +80,6 @@ public class CompleteInfoActivity extends AppCompatActivity {
 
 
     private File mPhotoFile;
-    private File mSubmitPicture;
     private boolean mIsNeverCompile;
 
     @Override
@@ -175,7 +175,7 @@ public class CompleteInfoActivity extends AppCompatActivity {
                     //Uri uri = data.getData();
                     Uri uri = FileProvider.getUriForFile(this, "com.yinhao.chatapp.FileProvider", mPhotoFile);
                     Bitmap bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(uri));
-                    mSubmitPicture = savePicture(bitmap);
+                    savePicture(bitmap);
                     mHeadImage.setImageBitmap(bitmap);
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
@@ -187,7 +187,7 @@ public class CompleteInfoActivity extends AppCompatActivity {
     private void displayImage(String path) {
         Bitmap bm = PictureUtils.getScaledBitmap(path, this);
         mHeadImage.setImageBitmap(bm);
-        mSubmitPicture = savePicture(bm);
+        savePicture(bm);
     }
 
     /**
@@ -206,7 +206,7 @@ public class CompleteInfoActivity extends AppCompatActivity {
                     cacheDir
             );
             fos = new FileOutputStream(file);
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 0, fos);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
             fos.flush();
         } catch (IOException e) {
             e.printStackTrace();
@@ -217,6 +217,8 @@ public class CompleteInfoActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
         }
+        Prefs.putString(this, Prefs.PREF_FILE_PATH, file.getName());
+        Log.i(TAG, "filepath1:" + file.getPath());
         return file;
     }
 
@@ -381,9 +383,15 @@ public class CompleteInfoActivity extends AppCompatActivity {
         mToolbar.findViewById(R.id.submit_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                String fileName = Prefs.getString(CompleteInfoActivity.this, Prefs.PREF_FILE_PATH);
+                //File storageDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
+                File storageDir = getCacheDir();
+                final File file = new File(storageDir, fileName);
+
                 mProgressBar.setVisibility(View.VISIBLE);
-                if ((mSubmitPicture.exists()) && (!TextUtils.isEmpty(mNameText.getText().toString()))) {
-                    HttpUtils.handleCompleteInfoOnServer(mSubmitPicture,
+
+                if ((file.exists()) && (!TextUtils.isEmpty(mNameText.getText().toString()))) {
+                    HttpUtils.handleCompleteInfoOnServer(file,
                             "/user/modify",
                             mNameText.getText().toString(),
                             Prefs.getString(CompleteInfoActivity.this, Prefs.PREF_KEY_LOGIN_ID)
@@ -398,7 +406,12 @@ public class CompleteInfoActivity extends AppCompatActivity {
                                 public void onResponse(Call call, Response response) throws IOException {
                                     String result = response.body().string();
                                     Log.i(TAG, "上传成功:" + result);
-                                    mProgressBar.setVisibility(View.GONE);
+                                    runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            mProgressBar.setVisibility(View.GONE);
+                                        }
+                                    });
                                     finish();
                                 }
                             });

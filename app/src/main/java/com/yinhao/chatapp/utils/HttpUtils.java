@@ -25,13 +25,17 @@ public class HttpUtils {
     private static final String TAG = "HttpUtils";
 
     public static void handleImageOnServer(File file, String id, String address, Callback callback) {
-        MultipartBody.Builder builder = new MultipartBody.Builder();
-        builder.setType(MultipartBody.FORM);
-        builder.addFormDataPart("txImg", file.getName(), RequestBody.create(MediaType.parse("image/*"), file));
+        MultipartBody.Builder builder = new MultipartBody.Builder().setType(MultipartBody.FORM);
+        // MediaType.parse() 里面是上传的文件类型。
+        RequestBody body = RequestBody.create(MediaType.parse("image/*"), file);
+        // 参数分别为， 请求key ，文件名称 ， RequestBody
+        builder.addFormDataPart("txImg", file.getName(), body);
+        Log.i(TAG, "上传的参数txImg:" + file.getName());
         builder.addFormDataPart("id", id);
-        RequestBody requestBody = builder.build();
+        MultipartBody multipartBody = builder.build();
+
         Request request = new Request.Builder()
-                .post(requestBody)
+                .post(multipartBody)
                 .url(ConstantValue.URL + address)
                 .build();
         OkHttpClient client = new OkHttpClient();

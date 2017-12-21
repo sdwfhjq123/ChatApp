@@ -7,13 +7,12 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Picture;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Environment;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
@@ -28,7 +27,6 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -52,10 +50,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-
-import javax.security.auth.login.LoginException;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -71,7 +66,6 @@ public class CompileInfoActivity extends AppCompatActivity {
     private static final int REQUEST_OPEN_CAMERA = 2;
     private static final int REQUEST_GET_ALBUM = 3;
     private static final int REQUEST_GET_CAMERA = 4;
-    private File mSubmitPicture;
 
     public static Intent newInstance(Context context) {
         Intent intent = new Intent(context, CompileInfoActivity.class);
@@ -134,9 +128,10 @@ public class CompileInfoActivity extends AppCompatActivity {
                     public void onClick(DialogInterface dialog, int which) {
                         //将输入框获取到的昵称赋值给nameText
                         Map<String, String> map = new HashMap<>();
+                        Log.i(TAG, "将要提交修改后的昵称" + dialogEditText.getText().toString());
                         map.put("id", Prefs.getString(CompileInfoActivity.this, Prefs.PREF_KEY_LOGIN_ID));
-                        map.put("nikeName", mNameText.getText().toString());
-                        HttpUtils.handleInfoOnServer("/user/getUserById", map, new Callback() {
+                        map.put("nikeName", dialogEditText.getText().toString());
+                        HttpUtils.handleInfoOnServer("/user/modify", map, new Callback() {
                             @Override
                             public void onFailure(Call call, IOException e) {
                                 Log.e(TAG, "修改头像失败");
@@ -148,7 +143,7 @@ public class CompileInfoActivity extends AppCompatActivity {
                                 runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {
-                                        mNameText.setText(dialogEditText.getText().toString());
+                                        initData();
                                     }
                                 });
                             }
@@ -165,7 +160,7 @@ public class CompileInfoActivity extends AppCompatActivity {
      */
     private void initData() {
         Map<String, String> map = new HashMap<>();
-        map.put("userId", Prefs.getString(this, Prefs.PREF_KEY_ACCOUNT));
+        map.put("userId", Prefs.getString(this, Prefs.PREF_KEY_LOGIN_ID));
         HttpUtils.handleInfoOnServer("/user/getUserById", map, new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
@@ -177,16 +172,22 @@ public class CompileInfoActivity extends AppCompatActivity {
                 String result = response.body().string();
                 try {
                     JSONObject jsonObject = new JSONObject(result);
-                    String id = jsonObject.getString("id");
-                    String nikeName = jsonObject.getString("nikeName");
-                    String portraitUri = jsonObject.getString("portraitUri");
+                    JSONObject data = jsonObject.getJSONObject("data");
+                    String id = data.getString("id");
+                    final String nikeName = data.getString("nikeName");
+                    final String portraitUri = data.getString("portraitUri");
                     //将登录成功返回的userId保存
                     Prefs.putString(CompileInfoActivity.this, Prefs.PREF_KEY_NIKE_NAME, nikeName);
                     Prefs.putString(CompileInfoActivity.this, Prefs.PREF_KEY_HEAD_IMAGE_URL, portraitUri);
                     Prefs.putString(CompileInfoActivity.this, Prefs.PREF_KEY_LOGIN_ID, id);
-                    mNameText.setText(nikeName);
-                    Glide.with(CompileInfoActivity.this).load(ConstantValue.URL + portraitUri).into(mHeadImage);
-                    mUserIdText.setText(Prefs.getString(CompileInfoActivity.this, Prefs.PREF_KEY_ACCOUNT));
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            mNameText.setText(nikeName);
+                            Glide.with(CompileInfoActivity.this).load(ConstantValue.URL + portraitUri).into(mHeadImage);
+                            //mUserIdText.setText(Prefs.getString(getActivity(), Prefs.PREF_KEY_ACCOUNT));
+                        }
+                    });
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -233,7 +234,7 @@ public class CompileInfoActivity extends AppCompatActivity {
                     //Uri uri = data.getData();
                     Uri uri = FileProvider.getUriForFile(this, "com.yinhao.chatapp.FileProvider", mPhotoFile);
                     Bitmap bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(uri));
-                    mSubmitPicture = savePicture(bitmap);
+                    savePicture(bitmap);
                     //上传头像
                     submitHeadFile();
                     mHeadImage.setImageBitmap(bitmap);
@@ -248,11 +249,15 @@ public class CompileInfoActivity extends AppCompatActivity {
      * 上传头像
      */
     private void submitHeadFile() {
+        String fileName = Prefs.getString(this, Prefs.PREF_FILE_PATH);
+        File storageDir = getCacheDir();
+        final File file = new File(storageDir, fileName);
+        Log.i(TAG, "filepath提交:" + file.getPath());
         //修改头像
-        if (mSubmitPicture.exists()) {
-            HttpUtils.handleImageOnServer(mSubmitPicture,
-                    "/user/modify",
+        if (file.exists()) {
+            HttpUtils.handleImageOnServer(file,
                     Prefs.getString(CompileInfoActivity.this, Prefs.PREF_KEY_LOGIN_ID),
+                    "/user/modify",
                     new Callback() {
                         @Override
                         public void onFailure(Call call, IOException e) {
@@ -273,6 +278,7 @@ public class CompileInfoActivity extends AppCompatActivity {
                                 @Override
                                 public void run() {
                                     Toast.makeText(CompileInfoActivity.this, "修改头像成功", Toast.LENGTH_SHORT).show();
+                                    initData();
                                 }
                             });
                         }
@@ -282,7 +288,7 @@ public class CompileInfoActivity extends AppCompatActivity {
 
     private void displayImage(String path) {
         Bitmap bm = PictureUtils.getScaledBitmap(path, this);
-        mSubmitPicture = savePicture(bm);
+        savePicture(bm);
         mHeadImage.setImageBitmap(bm);
         //上传头像
         submitHeadFile();
@@ -293,18 +299,18 @@ public class CompileInfoActivity extends AppCompatActivity {
      *
      * @param bitmap
      */
-    private File savePicture(Bitmap bitmap) {
-        File cacheDir = getCacheDir();
+    private void savePicture(Bitmap bitmap) {
+        File storageDir = getCacheDir();
         File file = null;
         FileOutputStream fos = null;
         try {
             file = File.createTempFile(
                     "head_image",
                     ".jpg",
-                    cacheDir
+                    storageDir
             );
             fos = new FileOutputStream(file);
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 0, fos);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
             fos.flush();
         } catch (IOException e) {
             e.printStackTrace();
@@ -315,7 +321,8 @@ public class CompileInfoActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
         }
-        return file;
+        Prefs.putString(this, Prefs.PREF_FILE_PATH, file.getName());
+        Log.i(TAG, "filepath保存:" + file.getPath());
     }
 
     private String getImagePath(Uri uri, String selection) {

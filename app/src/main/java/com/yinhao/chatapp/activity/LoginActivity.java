@@ -17,6 +17,7 @@ import com.yinhao.chatapp.R;
 import com.yinhao.chatapp.VO.LoginVO;
 import com.yinhao.chatapp.global.ChatApplication;
 import com.yinhao.chatapp.model.Friends;
+import com.yinhao.chatapp.utils.ConstantValue;
 import com.yinhao.chatapp.utils.HttpUtils;
 import com.yinhao.chatapp.utils.Prefs;
 
@@ -92,10 +93,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         RongIM.setUserInfoProvider(this, true);
     }
 
-    private void initUserInfo(String loginId, String nikeName, String headImageUrl) {
-        mUserInfo.add(new Friends(loginId, nikeName, headImageUrl));
-    }
-
     /**
      * <p>连接服务器，在整个应用程序全局，只需要调用一次，需在 init 之后调用。</p>
      * <p>如果调用此接口遇到连接失败，SDK 会自动启动重连机制进行最多10次重连，分别是1, 2, 4, 8, 16, 32, 64, 128, 256, 512秒后。
@@ -129,7 +126,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                     mUserId = userid;
                     startActivity(new Intent(LoginActivity.this, HomeActivity.class));
                     finish();
-                    RongIM.setUserInfoProvider(LoginActivity.this, true);
                 }
 
                 /**
@@ -346,7 +342,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 @Override
                 public void onResponse(Call call, Response response) throws IOException {
                     String result = response.body().string();
-                    //Log.i(TAG, "登录" + result);
+                    Log.i(TAG, "登录" + result);
                     Gson gson = new Gson();
                     final LoginVO loginVO = gson.fromJson(result, LoginVO.class);
                     if (loginVO.getResultCode().equals("500")) {
@@ -358,9 +354,11 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                         });
                     } else if (loginVO.getResultCode().equals("200")) {
                         String token = loginVO.getData().getToken();
-                        String loginId = loginVO.getData().getUser().getId();
-                        String nikeName = loginVO.getData().getUser().getNikeName();
-                        String headImageUrl = loginVO.getData().getUser().getPortraitUri();
+                        final String loginId = loginVO.getData().getUser().getId();
+                        final String nikeName = loginVO.getData().getUser().getNikeName();
+                        final String headImageUrl = loginVO.getData().getUser().getPortraitUri();
+
+                        Log.i(TAG, "token length:" + token);
                         Prefs.putString(LoginActivity.this, Prefs.PREF_KEY_LOGIN_ID, loginId);
                         if (TextUtils.isEmpty(token)) {
                             runOnUiThread(new Runnable() {
@@ -376,7 +374,15 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                             Prefs.putString(LoginActivity.this, Prefs.PREF_KEY_TOKEN, token);
                             Prefs.putString(LoginActivity.this, Prefs.PREF_KEY_ACCOUNT, info);
                             //保存用户信息到会话列表及界面
-                            initUserInfo(loginId, nikeName, headImageUrl);
+                            RongIM.setUserInfoProvider(new RongIM.UserInfoProvider() {
+
+                                @Override
+                                public UserInfo getUserInfo(String userId) {
+
+                                    return new UserInfo(loginId, nikeName, Uri.parse(ConstantValue.URL + headImageUrl));//根据 userId 去你的用户系统里查询对应的用户信息返回给融云 SDK。
+                                }
+
+                            }, true);
                             connect(token);
                         }
 

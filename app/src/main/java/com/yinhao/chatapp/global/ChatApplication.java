@@ -4,13 +4,15 @@ import android.app.ActivityManager;
 import android.app.Application;
 import android.content.Context;
 
+import org.litepal.LitePalApplication;
+
 import io.rong.imkit.RongIM;
 
 /**
  * Created by hp on 2017/12/15.
  */
 
-public class ChatApplication extends Application {
+public class ChatApplication extends LitePalApplication {
 
     @Override
     public void onCreate() {
