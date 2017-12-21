@@ -51,6 +51,7 @@ public class ConversationActivity extends AppCompatActivity {
             //TODO 如果昵称没拿到,根据id重新请求服务器进行保存
 
         }
+
         //TODO 如果是群组，就加载群组id里面的用户的数据进行更新头像，如果是单聊，直接return，因为前面已经请求过
         //TODO 如果是群组，右上角就显示查看群成员列表，根据targetId，如果是单聊隐藏  private or group
 

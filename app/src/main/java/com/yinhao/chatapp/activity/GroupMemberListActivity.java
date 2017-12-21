@@ -1,8 +1,7 @@
 package com.yinhao.chatapp.activity;
 
-import android.net.Uri;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -28,10 +27,11 @@ import okhttp3.Callback;
 import okhttp3.Response;
 
 /**
- * 群组列表
+ * 群组成员列表
  */
-public class GroupListActivity extends AppCompatActivity {
-    private static final String TAG = "GroupListActivity";
+public class GroupMemberListActivity extends AppCompatActivity {
+    //TODO 目前是copy的群组列表，需要修改以及适配器的修改
+    private static final String TAG = "GroupMemberListActivity";
 
     private Toolbar mToolbar;
     private RecyclerView mRecyclerView;
@@ -56,7 +56,7 @@ public class GroupListActivity extends AppCompatActivity {
         mAdapter.setOnItemClickListener(new GroupAdapter.OnItemClickListener() {
             @Override
             public void onStartConversationGroupChat(View v, int position) {
-                RongIM.getInstance().startGroupChat(GroupListActivity.this,
+                RongIM.getInstance().startGroupChat(GroupMemberListActivity.this,
                         mList.get(position).getId(),
                         mList.get(position).getName());
             }
