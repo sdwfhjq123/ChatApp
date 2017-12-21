@@ -1,5 +1,6 @@
 package com.yinhao.chatapp.fragment;
 
+import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
@@ -17,6 +18,7 @@ import android.widget.Toast;
 import com.google.gson.Gson;
 import com.yinhao.chatapp.R;
 import com.yinhao.chatapp.VO.FriendVO;
+import com.yinhao.chatapp.activity.GroupListActivity;
 import com.yinhao.chatapp.activity.HomeActivity;
 import com.yinhao.chatapp.adapter.HeaderAndFooterAdapter;
 import com.yinhao.chatapp.utils.ConstantValue;
@@ -85,11 +87,9 @@ public class FriendFragment extends Fragment {
             @Override
             public void onStartGroupActivity(View v) {
                 //开启群组列表
+                startActivity(new Intent(getActivity(), GroupListActivity.class));
             }
         });
-
-        //创建数据库表
-        //SQLiteDatabase database = Connector.getWritableDatabase();
 
         initData();
 
@@ -99,8 +99,8 @@ public class FriendFragment extends Fragment {
 
     private void initData() {
         Map<String, String> map = new HashMap<>();
-//        map.put("userId", Prefs.getString(getActivity(), Prefs.PREF_KEY_LOGIN_ID));
-        map.put("userId", "ffb809ca72ba4ae4a58e53103fcf7151");
+        map.put("userId", Prefs.getString(getActivity(), Prefs.PREF_KEY_LOGIN_ID));
+        //map.put("userId", "ffb809ca72ba4ae4a58e53103fcf7151");
         HttpUtils.handleInfoOnServer("/user/getFriendsList", map, new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {

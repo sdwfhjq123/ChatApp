@@ -156,9 +156,12 @@ public class HeaderAndFooterAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 
     private class FooterViewHolder extends RecyclerView.ViewHolder {
 
+        private TextView mContactNumbers;
+
         public FooterViewHolder(LayoutInflater inflater, ViewGroup parent) {
             super(inflater.inflate(R.layout.list_foot_item, parent, false));
-
+            mContactNumbers = (TextView) itemView;
+            mContactNumbers.setText(mContext.getString(R.string.contacts,getContentItemCount()));
         }
 
 

@@ -385,9 +385,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                             }, true);
                             connect(token);
                         }
-
                     }
-
                 }
             });
 

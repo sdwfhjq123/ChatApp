@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">ChatApp</string>
+    <string name="contacts">%1$d 位联系人</string>
 </resources>
