@@ -16,7 +16,7 @@
             android:id="@+id/contact_head_image"
             android:layout_width="35dp"
             android:layout_height="35dp"
-            android:background="#f00" />
+            android:scaleType="centerCrop" />
 
         <TextView
             android:id="@+id/contact_name_textview"

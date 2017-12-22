@@ -154,6 +154,7 @@
         <activity android:name=".activity.CompileInfoActivity" />
         <activity android:name=".activity.CompleteInfoActivity" />
         <activity android:name=".activity.GroupListActivity"></activity>
+        <activity android:name=".activity.GroupMemberListActivity"></activity>
     </application>
 
 </manifest>

@@ -1,5 +1,8 @@
 package com.yinhao.chatapp.activity;
 
+import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -10,8 +13,10 @@ import android.view.View;
 
 import com.google.gson.Gson;
 import com.yinhao.chatapp.R;
+import com.yinhao.chatapp.VO.FriendVO;
 import com.yinhao.chatapp.VO.GroupVO;
 import com.yinhao.chatapp.adapter.GroupAdapter;
+import com.yinhao.chatapp.adapter.GroupMemberAdapter;
 import com.yinhao.chatapp.utils.HttpUtils;
 import com.yinhao.chatapp.utils.Prefs;
 
@@ -22,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 import io.rong.imkit.RongIM;
+import io.rong.imlib.model.UserInfo;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
@@ -33,32 +39,42 @@ public class GroupMemberListActivity extends AppCompatActivity {
     //TODO 目前是copy的群组列表，需要修改以及适配器的修改
     private static final String TAG = "GroupMemberListActivity";
 
+    private static final String GROUP_ID = "group_id";
+
     private Toolbar mToolbar;
     private RecyclerView mRecyclerView;
     private LinearLayoutManager mLinearLayoutManager;
-    private GroupAdapter mAdapter;
+    private GroupMemberAdapter mAdapter;
 
-    private List<GroupVO.GroupData> mList = new ArrayList<>();
+    private List<FriendVO.FriendData> mList = new ArrayList<>();
+    private String mGroupId;
+
+    public static Intent newInstance(Context context, String groupId) {
+        Intent intent = new Intent(context, GroupMemberListActivity.class);
+        intent.putExtra(GROUP_ID, groupId);
+        return intent;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_group_list);
+
+        mGroupId = getIntent().getStringExtra(GROUP_ID);
+
         initToolbar();
 
         mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         mLinearLayoutManager = new LinearLayoutManager(this);
         mLinearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         mRecyclerView.setLayoutManager(mLinearLayoutManager);
-        mAdapter = new GroupAdapter(this, mList);
+        mAdapter = new GroupMemberAdapter(this, mList);
         mRecyclerView.setAdapter(mAdapter);
 
-        mAdapter.setOnItemClickListener(new GroupAdapter.OnItemClickListener() {
+        mAdapter.setOnItemClickListener(new GroupMemberAdapter.OnItemClickListener() {
             @Override
-            public void onStartConversationGroupChat(View v, int position) {
-                RongIM.getInstance().startGroupChat(GroupMemberListActivity.this,
-                        mList.get(position).getId(),
-                        mList.get(position).getName());
+            public void onStartConversationPrivateChat(View v, int position) {
+
             }
         });
 
@@ -67,9 +83,8 @@ public class GroupMemberListActivity extends AppCompatActivity {
 
     private void initData() {
         Map<String, String> map = new HashMap<>();
-        map.put("userId", Prefs.getString(this, Prefs.PREF_KEY_LOGIN_ID));
-        //map.put("userId", "ffb809ca72ba4ae4a58e53103fcf7151");
-        HttpUtils.handleInfoOnServer("/user/getGroupList", map, new Callback() {
+        map.put("groupId", mGroupId);
+        HttpUtils.handleInfoOnServer("/user/getGroupUser", map, new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
 
@@ -80,13 +95,26 @@ public class GroupMemberListActivity extends AppCompatActivity {
                 String result = response.body().string();
                 Log.i(TAG, "获取的群组列表:" + result);
                 Gson gson = new Gson();
-                GroupVO groupVO = gson.fromJson(result, GroupVO.class);
-                String resultCode = groupVO.getResultCode();
+                FriendVO friendVO = gson.fromJson(result, FriendVO.class);
+                String resultCode = friendVO.getResultCode();
                 if (resultCode.equals("200")) {
-                    final List<GroupVO.GroupData> data = groupVO.getData();
+                    final List<FriendVO.FriendData> data = friendVO.getData();
                     for (int i = 0; i < data.size(); i++) {
-                        mList.add(new GroupVO.GroupData(data.get(i).getId(), data.get(i).getName()));
+                        mList.add(new FriendVO.FriendData(data.get(i).getId(),
+                                data.get(i).getNikeName(),
+                                data.get(i).getPortraitUri(),
+                                data.get(i).getCommand()));
+                        final int finalI = i;
+                        RongIM.setUserInfoProvider(new RongIM.UserInfoProvider() {
+                            @Override
+                            public UserInfo getUserInfo(String s) {
+                                return new UserInfo(data.get(finalI).getId(),
+                                        data.get(finalI).getNikeName(),
+                                        Uri.parse(data.get(finalI).getPortraitUri()));
+                            }
+                        }, true);
                     }
+
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -101,7 +129,7 @@ public class GroupMemberListActivity extends AppCompatActivity {
 
     private void initToolbar() {
         mToolbar = (Toolbar) findViewById(R.id.tool_bar);
-        mToolbar.setTitle("我的群组");//要在setSupportActionBar方法前设置
+        mToolbar.setTitle("群成员");//要在setSupportActionBar方法前设置
         setSupportActionBar(mToolbar);
 
         mToolbar.setNavigationIcon(R.drawable.ic_back);
