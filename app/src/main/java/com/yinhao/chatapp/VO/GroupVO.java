@@ -29,10 +29,12 @@ public class GroupVO {
     public static class GroupData {
         private String id;
         private String name;
+        private String portraitUri;
 
-        public GroupData(String id, String name) {
+        public GroupData(String id, String name, String portraitUri) {
             this.id = id;
             this.name = name;
+            this.portraitUri = portraitUri;
         }
 
         public String getId() {
@@ -49,6 +51,14 @@ public class GroupVO {
 
         public void setName(String name) {
             this.name = name;
+        }
+
+        public String getPortraitUri() {
+            return portraitUri;
+        }
+
+        public void setPortraitUri(String portraitUri) {
+            this.portraitUri = portraitUri;
         }
     }
 }

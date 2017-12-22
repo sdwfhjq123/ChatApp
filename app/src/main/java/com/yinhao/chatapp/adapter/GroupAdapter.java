@@ -37,7 +37,7 @@ public class GroupAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 
     public GroupAdapter(Context context, List<GroupData> groupData) {
         mContext = context;
-        mLayoutInflater = LayoutInflater.from(context);
+        mLayoutInflater = LayoutInflater.from(mContext);
         mList = groupData;
     }
 
@@ -61,7 +61,9 @@ public class GroupAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-        ((NormalViewHolder) holder).bind(mList.get(position).getName());
+        ((NormalViewHolder) holder).bind(mList.get(position).getId(),
+                mList.get(position).getName(),
+                mList.get(position).getPortraitUri());
     }
 
     @Override
@@ -82,8 +84,9 @@ public class GroupAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
             itemView.setOnClickListener(this);
         }
 
-        public void bind(String nikeName) {
+        public void bind(String id, String nikeName, String portraitUri) {
             mContactNameTextView.setText(nikeName);
+            Glide.with(mContext).load(ConstantValue.URL + portraitUri).into(mHeadContactImageView);
         }
 
         @Override

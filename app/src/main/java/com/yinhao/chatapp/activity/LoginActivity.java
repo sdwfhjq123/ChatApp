@@ -32,6 +32,7 @@ import java.util.Map;
 
 import io.rong.imkit.RongIM;
 import io.rong.imlib.RongIMClient;
+import io.rong.imlib.model.Conversation;
 import io.rong.imlib.model.UserInfo;
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -84,6 +85,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private int[] mNumbers = new int[10];
     private List<Friends> mUserInfo = new ArrayList<>();
     private String mUserId;
+
+    //错误的点击计数
+    private int mErrorCount;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -219,9 +223,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                                     runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
-                                            Toast.makeText(LoginActivity.this, "注册成功！", Toast.LENGTH_SHORT).show();
-                                            startActivity(new Intent(LoginActivity.this, CompileInfoActivity.class));
-                                            finish();
+                                            Toast.makeText(LoginActivity.this, "注册成功！请继续完善资料", Toast.LENGTH_LONG).show();
+                                            startActivity(new Intent(LoginActivity.this, CompleteInfoActivity.class));
                                         }
                                     });
                                 }
@@ -350,6 +353,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                             @Override
                             public void run() {
                                 Toast.makeText(LoginActivity.this, "口令不对", Toast.LENGTH_SHORT).show();
+                                //输入五次不对清理缓存删除数据
+                                clearCache();
                             }
                         });
                     } else if (loginVO.getResultCode().equals("200")) {
@@ -393,6 +398,47 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             Toast.makeText(this, "格式不对", Toast.LENGTH_SHORT).show();
         }
 
+    }
+
+    /**
+     * 输入5次清理缓存
+     */
+    private void clearCache() {
+        mErrorCount++;
+        Log.i(TAG, "记录输入错误的次数:" + mErrorCount);
+        if (mErrorCount >= 5) {
+            RongIM.connect(Prefs.getString(LoginActivity.this, Prefs.PREF_KEY_TOKEN), new RongIMClient.ConnectCallback() {
+                @Override
+                public void onTokenIncorrect() {
+
+                }
+
+                @Override
+                public void onSuccess(String userId) {
+                    RongIM.getInstance().clearConversations(new RongIMClient.ResultCallback() {
+                        @Override
+                        public void onSuccess(Object o) {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(LoginActivity.this, "输入五次错误口令，之前的登录账号聊天记录清除", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        }
+
+                        @Override
+                        public void onError(RongIMClient.ErrorCode errorCode) {
+
+                        }
+                    }, Conversation.ConversationType.PRIVATE, Conversation.ConversationType.GROUP);
+                }
+
+                @Override
+                public void onError(RongIMClient.ErrorCode errorCode) {
+
+                }
+            });
+        }
     }
 
     private void operation() {

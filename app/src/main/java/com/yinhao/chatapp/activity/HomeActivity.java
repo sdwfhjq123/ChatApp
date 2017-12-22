@@ -186,8 +186,8 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                 mViewPager.setCurrentItem(2);
                 break;
             case R.id.add_friends_linearlayout:
-                //Toast.makeText(this, "添加好友", Toast.LENGTH_SHORT).show();
-                startActivity(new Intent(this, AddFriendActivity.class));
+                Toast.makeText(this, "添加好友功能暂未开放，敬请期待...", Toast.LENGTH_SHORT).show();
+                //startActivity(new Intent(this, AddFriendActivity.class));
                 break;
         }
         //点击PopWindow的item后,关闭此PopWindow

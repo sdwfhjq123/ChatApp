@@ -9,9 +9,11 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.yinhao.chatapp.R;
 import com.yinhao.chatapp.VO.FriendVO;
 import com.yinhao.chatapp.VO.GroupVO.GroupData;
+import com.yinhao.chatapp.utils.ConstantValue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +38,7 @@ public class GroupMemberAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
     public GroupMemberAdapter(Context context, List<FriendData> groupData) {
         mContext = context;
-        mLayoutInflater = LayoutInflater.from(context);
+        mLayoutInflater = LayoutInflater.from(mContext);
         mList = groupData;
     }
 
@@ -60,7 +62,10 @@ public class GroupMemberAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-        ((NormalViewHolder) holder).bind(mList.get(position).getNikeName());
+        ((NormalViewHolder) holder).bind(mList.get(position).getId(),
+                mList.get(position).getNikeName(),
+                mList.get(position).getPortraitUri(),
+                mList.get(position).getCommand());
     }
 
     @Override
@@ -81,8 +86,9 @@ public class GroupMemberAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             itemView.setOnClickListener(this);
         }
 
-        public void bind(String nikeName) {
+        public void bind(String id, String nikeName, String portraitUri, String command) {
             mContactNameTextView.setText(nikeName);
+            Glide.with(mContext).load(ConstantValue.URL + portraitUri).into(mHeadContactImageView);
         }
 
         @Override

@@ -36,7 +36,6 @@ import okhttp3.Response;
  * 群组成员列表
  */
 public class GroupMemberListActivity extends AppCompatActivity {
-    //TODO 目前是copy的群组列表，需要修改以及适配器的修改
     private static final String TAG = "GroupMemberListActivity";
 
     private static final String GROUP_ID = "group_id";

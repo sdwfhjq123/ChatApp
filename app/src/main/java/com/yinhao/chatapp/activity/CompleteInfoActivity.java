@@ -387,9 +387,7 @@ public class CompleteInfoActivity extends AppCompatActivity {
                 //File storageDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
                 File storageDir = getCacheDir();
                 final File file = new File(storageDir, fileName);
-
                 mProgressBar.setVisibility(View.VISIBLE);
-
                 if ((file.exists()) && (!TextUtils.isEmpty(mNameText.getText().toString()))) {
                     HttpUtils.handleCompleteInfoOnServer(file,
                             "/user/modify",
@@ -410,6 +408,7 @@ public class CompleteInfoActivity extends AppCompatActivity {
                                         @Override
                                         public void run() {
                                             mProgressBar.setVisibility(View.GONE);
+                                            Toast.makeText(CompleteInfoActivity.this, "完善资料成功，请登录账号", Toast.LENGTH_SHORT).show();
                                         }
                                     });
                                     finish();

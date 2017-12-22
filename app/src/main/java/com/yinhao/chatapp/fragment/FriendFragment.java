@@ -13,6 +13,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
@@ -59,6 +60,7 @@ public class FriendFragment extends Fragment {
 
     private RecyclerView mRecyclerView;
     private LinearLayoutManager mLinearLayoutManager;
+    private ProgressBar mProgressBar;
     private HeaderAndFooterAdapter mAdapter;
 
     private List<FriendVO.FriendData> mList = new ArrayList<>();
@@ -68,7 +70,12 @@ public class FriendFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.friend_fragment, container, false);
 
+        mProgressBar = (ProgressBar) view.findViewById(R.id.progress_bar);
         mRecyclerView = (RecyclerView) view.findViewById(R.id.recycler_view);
+
+        mRecyclerView.setVisibility(View.GONE);
+        mProgressBar.setVisibility(View.VISIBLE);
+
         mLinearLayoutManager = new LinearLayoutManager(getActivity());
         mLinearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         mRecyclerView.setLayoutManager(mLinearLayoutManager);
@@ -90,11 +97,9 @@ public class FriendFragment extends Fragment {
                 startActivity(new Intent(getActivity(), GroupListActivity.class));
             }
         });
-
         initData();
 
         return view;
-
     }
 
     private void initData() {
@@ -141,6 +146,8 @@ public class FriendFragment extends Fragment {
                             public void run() {
                                 mAdapter.setData(mList);
                                 mAdapter.notifyDataSetChanged();
+                                mRecyclerView.setVisibility(View.VISIBLE);
+                                mProgressBar.setVisibility(View.GONE);
                             }
                         });
 

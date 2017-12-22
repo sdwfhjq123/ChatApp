@@ -27,7 +27,10 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
@@ -72,6 +75,7 @@ public class CompileInfoActivity extends AppCompatActivity {
 
     public static Intent newInstance(Context context) {
         Intent intent = new Intent(context, CompileInfoActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         return intent;
     }
 
@@ -112,102 +116,124 @@ public class CompileInfoActivity extends AppCompatActivity {
         //编辑昵称
         mCompileName = (LinearLayout) findViewById(R.id.compile_name_linearlayout);
         mNameText = (TextView) findViewById(R.id.name_text);
-        final View dialogView = View.inflate(CompileInfoActivity.this, R.layout.dialog_et, null);
-        final EditText dialogEditText = (EditText) dialogView.findViewById(R.id.dialog_edit_text);
         mCompileName.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(CompileInfoActivity.this);
-                builder.setTitle("设置昵称");
-                builder.setView(dialogView);
-                builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                        mNameText.setText(Prefs.getString(CompileInfoActivity.this, Prefs.PREF_KEY_NIKE_NAME));
-                    }
-                });
-                builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                        //将输入框获取到的昵称赋值给nameText
-                        Map<String, String> map = new HashMap<>();
-                        Log.i(TAG, "将要提交修改后的昵称" + dialogEditText.getText().toString());
-                        map.put("id", Prefs.getString(CompileInfoActivity.this, Prefs.PREF_KEY_LOGIN_ID));
-                        map.put("nikeName", dialogEditText.getText().toString());
-                        HttpUtils.handleInfoOnServer("/user/modify", map, new Callback() {
+                final View dialogView = LayoutInflater.from(CompileInfoActivity.this).inflate(R.layout.dialog_et, null, true);
+                final EditText dialogEditText = (EditText) dialogView.findViewById(R.id.dialog_edit_text);
+                new AlertDialog.Builder(CompileInfoActivity.this)
+                        .setTitle("设置昵称")
+                        .setView(dialogView)
+                        .setNegativeButton("取消", new DialogInterface.OnClickListener() {
                             @Override
-                            public void onFailure(Call call, IOException e) {
-                                Log.e(TAG, "修改昵称失败");
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                                if (dialogEditText.getParent() != null) {
+                                    ((ViewGroup) dialogEditText.getParent()).removeAllViews();
+                                }
+                                mNameText.setText(Prefs.getString(CompileInfoActivity.this, Prefs.PREF_KEY_NIKE_NAME));
                             }
-
+                        })
+                        .setPositiveButton("确定", new DialogInterface.OnClickListener() {
                             @Override
-                            public void onResponse(Call call, Response response) throws IOException {
-                                Log.i(TAG, "修改昵称成功");
-                                runOnUiThread(new Runnable() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                                if (dialogEditText.getParent() != null) {
+                                    ((ViewGroup) dialogEditText.getParent()).removeAllViews();
+                                }
+                                //将输入框获取到的昵称赋值给nameText
+                                Map<String, String> map = new HashMap<>();
+                                Log.i(TAG, "将要提交修改后的昵称" + dialogEditText.getText().toString());
+                                map.put("id", Prefs.getString(CompileInfoActivity.this, Prefs.PREF_KEY_LOGIN_ID));
+                                map.put("nikeName", dialogEditText.getText().toString());
+                                HttpUtils.handleInfoOnServer("/user/modify", map, new Callback() {
                                     @Override
-                                    public void run() {
-                                        initData();
+                                    public void onFailure(Call call, IOException e) {
+                                        Log.e(TAG, "修改昵称失败");
+                                    }
+
+                                    @Override
+                                    public void onResponse(Call call, Response response) throws IOException {
+                                        Log.i(TAG, "修改昵称成功");
+                                        runOnUiThread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                initData();
+                                                Toast.makeText(CompileInfoActivity.this, "修改昵称成功", Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
                                     }
                                 });
                             }
-                        });
-                    }
-                });
-                builder.show();
+                        }).show();
             }
         });
 
         //修改登录口令
+
         mCompileCommand = (LinearLayout) findViewById(R.id.compile_command);
         mCommandText = (TextView) findViewById(R.id.command_text);
         mCommandText.setText(Prefs.getString(CompileInfoActivity.this, Prefs.PREF_KEY_ACCOUNT));
         mCompileCommand.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                dialogEditText.setInputType(EditorInfo.TYPE_CLASS_PHONE);
-                AlertDialog.Builder builder = new AlertDialog.Builder(CompileInfoActivity.this);
-                builder.setTitle("设置登录口令(只能为数字)");
-                builder.setView(dialogView);
-                builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                        mCommandText.setText(Prefs.getString(CompileInfoActivity.this, Prefs.PREF_KEY_ACCOUNT));
-                    }
-                });
-                builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                        //将输入框获取到的昵称赋值给nameText
-                        Map<String, String> map = new HashMap<>();
-                        Log.i(TAG, "将要提交修改后的昵称" + dialogEditText.getText().toString());
-                        map.put("id", Prefs.getString(CompileInfoActivity.this, Prefs.PREF_KEY_LOGIN_ID));
-                        map.put("command", dialogEditText.getText().toString());
-                        HttpUtils.handleInfoOnServer("/user/modify", map, new Callback() {
+                final View changeIdView = LayoutInflater.from(CompileInfoActivity.this).inflate(R.layout.dialog_et_num, null, false);
+                final EditText changeIdEditText = (EditText) changeIdView.findViewById(R.id.dialog_edit_text);
+                changeIdEditText.setInputType(EditorInfo.TYPE_CLASS_PHONE);
+                new AlertDialog.Builder(CompileInfoActivity.this)
+                        .setTitle("设置登录口令(只能为数字)")
+                        .setView(changeIdView)
+                        .setNegativeButton("取消", new DialogInterface.OnClickListener() {
                             @Override
-                            public void onFailure(Call call, IOException e) {
-                                Log.e(TAG, "修改口令失败");
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+//                                if (changeIdEditText.getParent() != null) {
+//                                    ((ViewGroup) changeIdEditText.getParent()).removeAllViews();
+//                                }
+                                mCommandText.setText(Prefs.getString(CompileInfoActivity.this, Prefs.PREF_KEY_ACCOUNT));
                             }
-
+                        })
+                        .setPositiveButton("确定", new DialogInterface.OnClickListener() {
                             @Override
-                            public void onResponse(Call call, Response response) throws IOException {
-                                Log.i(TAG, "修改口令成功");
-                                runOnUiThread(new Runnable() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+//                                if (changeIdEditText.getParent() != null) {
+//                                    ((ViewGroup) changeIdEditText.getParent()).removeAllViews();
+//                                }
+                                //将输入框获取到的昵称赋值给nameText
+                                Map<String, String> map = new HashMap<>();
+                                Log.i(TAG, "将要提交修改后的昵称" + changeIdEditText.getText().toString());
+                                map.put("id", Prefs.getString(CompileInfoActivity.this, Prefs.PREF_KEY_LOGIN_ID));
+                                map.put("command", changeIdEditText.getText().toString());
+                                HttpUtils.handleInfoOnServer("/user/modify", map, new Callback() {
                                     @Override
-                                    public void run() {
-                                        initData();
+                                    public void onFailure(Call call, IOException e) {
+                                        Log.e(TAG, "修改口令失败");
+                                    }
+
+                                    @Override
+                                    public void onResponse(Call call, Response response) throws IOException {
+                                        Log.i(TAG, "修改口令成功");
+                                        runOnUiThread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                initData();
+                                                Toast.makeText(CompileInfoActivity.this, "修改登录账号成功", Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
                                     }
                                 });
                             }
-                        });
-                    }
-                });
-                builder.show();
+                        }).show();
             }
         });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.i(TAG, "onResume:");
+        initData();
     }
 
     /**
@@ -232,7 +258,7 @@ public class CompileInfoActivity extends AppCompatActivity {
                     String id = data.getString("id");
                     final String nikeName = data.getString("nikeName");
                     final String portraitUri = data.getString("portraitUri");
-                    String command = data.getString("command");
+                    final String command = data.getString("command");
                     //将登录成功返回的userId保存
                     Prefs.putString(CompileInfoActivity.this, Prefs.PREF_KEY_NIKE_NAME, nikeName);
                     Prefs.putString(CompileInfoActivity.this, Prefs.PREF_KEY_HEAD_IMAGE_URL, portraitUri);
@@ -243,7 +269,7 @@ public class CompileInfoActivity extends AppCompatActivity {
                         public void run() {
                             mNameText.setText(nikeName);
                             Glide.with(CompileInfoActivity.this).load(ConstantValue.URL + portraitUri).into(mHeadImage);
-                            //mUserIdText.setText(Prefs.getString(getActivity(), Prefs.PREF_KEY_ACCOUNT));
+                            mCommandText.setText(command);
                         }
                     });
                 } catch (JSONException e) {
@@ -533,9 +559,6 @@ public class CompileInfoActivity extends AppCompatActivity {
         mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(CompileInfoActivity.this, LoginActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(intent);
                 finish();
             }
         });

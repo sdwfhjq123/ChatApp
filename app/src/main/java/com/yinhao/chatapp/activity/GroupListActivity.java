@@ -85,7 +85,9 @@ public class GroupListActivity extends AppCompatActivity {
                 if (resultCode.equals("200")) {
                     final List<GroupVO.GroupData> data = groupVO.getData();
                     for (int i = 0; i < data.size(); i++) {
-                        mList.add(new GroupVO.GroupData(data.get(i).getId(), data.get(i).getName()));
+                        mList.add(new GroupVO.GroupData(data.get(i).getId(),
+                                data.get(i).getName(),
+                                data.get(i).getPortraitUri()));
                     }
                     runOnUiThread(new Runnable() {
                         @Override

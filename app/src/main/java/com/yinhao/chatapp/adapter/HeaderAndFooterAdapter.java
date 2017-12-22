@@ -48,7 +48,7 @@ public class HeaderAndFooterAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 
     public HeaderAndFooterAdapter(Context context, List<FriendData> friendData) {
         mContext = context;
-        mLayoutInflater = LayoutInflater.from(context);
+        mLayoutInflater = LayoutInflater.from(mContext);
         mList = friendData;
     }
 
@@ -161,7 +161,8 @@ public class HeaderAndFooterAdapter extends RecyclerView.Adapter<RecyclerView.Vi
         public FooterViewHolder(LayoutInflater inflater, ViewGroup parent) {
             super(inflater.inflate(R.layout.list_foot_item, parent, false));
             mContactNumbers = (TextView) itemView;
-            mContactNumbers.setText(mContext.getString(R.string.contacts,getContentItemCount()));
+            Log.i(TAG, "多少位联系人" + getContentItemCount());
+            mContactNumbers.setText(mContext.getString(R.string.contacts, getContentItemCount()));
         }
 
 
