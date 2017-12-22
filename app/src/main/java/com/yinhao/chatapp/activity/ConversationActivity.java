@@ -161,7 +161,7 @@ public class ConversationActivity extends AppCompatActivity {
                                         String s = ((ImageMessage) content).getLocalUri().toString();
                                     } else if (content instanceof TextMessage) {
                                         String s = ((TextMessage) content).getContent();
-
+                                        //fff
                                     }
                                 }
                             }
