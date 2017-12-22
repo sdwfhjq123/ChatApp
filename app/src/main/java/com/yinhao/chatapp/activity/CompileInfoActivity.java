@@ -6,6 +6,7 @@ import android.content.ContentUris;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -22,11 +23,13 @@ import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -77,7 +80,8 @@ public class CompileInfoActivity extends AppCompatActivity {
     private ImageView mHeadImage;
     private LinearLayout mCompileName;
     private TextView mNameText;
-    private TextView mUserIdText;
+    private LinearLayout mCompileCommand;
+    private TextView mCommandText;
 
     private File mPhotoFile;
 
@@ -104,7 +108,6 @@ public class CompileInfoActivity extends AppCompatActivity {
 
         //头像imageview
         mHeadImage = (ImageView) findViewById(R.id.head_image);
-        mUserIdText = (TextView) findViewById(R.id.user_id_text);
 
         //编辑昵称
         mCompileName = (LinearLayout) findViewById(R.id.compile_name_linearlayout);
@@ -120,12 +123,14 @@ public class CompileInfoActivity extends AppCompatActivity {
                 builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        mNameText.setText("");
+                        dialog.dismiss();
+                        mNameText.setText(Prefs.getString(CompileInfoActivity.this, Prefs.PREF_KEY_NIKE_NAME));
                     }
                 });
                 builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
                         //将输入框获取到的昵称赋值给nameText
                         Map<String, String> map = new HashMap<>();
                         Log.i(TAG, "将要提交修改后的昵称" + dialogEditText.getText().toString());
@@ -134,12 +139,62 @@ public class CompileInfoActivity extends AppCompatActivity {
                         HttpUtils.handleInfoOnServer("/user/modify", map, new Callback() {
                             @Override
                             public void onFailure(Call call, IOException e) {
-                                Log.e(TAG, "修改头像失败");
+                                Log.e(TAG, "修改昵称失败");
                             }
 
                             @Override
                             public void onResponse(Call call, Response response) throws IOException {
-                                Log.i(TAG, "修改头像成功");
+                                Log.i(TAG, "修改昵称成功");
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        initData();
+                                    }
+                                });
+                            }
+                        });
+                    }
+                });
+                builder.show();
+            }
+        });
+
+        //修改登录口令
+        mCompileCommand = (LinearLayout) findViewById(R.id.compile_command);
+        mCommandText = (TextView) findViewById(R.id.command_text);
+        mCommandText.setText(Prefs.getString(CompileInfoActivity.this, Prefs.PREF_KEY_ACCOUNT));
+        mCompileCommand.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialogEditText.setInputType(EditorInfo.TYPE_CLASS_PHONE);
+                AlertDialog.Builder builder = new AlertDialog.Builder(CompileInfoActivity.this);
+                builder.setTitle("设置登录口令(只能为数字)");
+                builder.setView(dialogView);
+                builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                        mCommandText.setText(Prefs.getString(CompileInfoActivity.this, Prefs.PREF_KEY_ACCOUNT));
+                    }
+                });
+                builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                        //将输入框获取到的昵称赋值给nameText
+                        Map<String, String> map = new HashMap<>();
+                        Log.i(TAG, "将要提交修改后的昵称" + dialogEditText.getText().toString());
+                        map.put("id", Prefs.getString(CompileInfoActivity.this, Prefs.PREF_KEY_LOGIN_ID));
+                        map.put("command", dialogEditText.getText().toString());
+                        HttpUtils.handleInfoOnServer("/user/modify", map, new Callback() {
+                            @Override
+                            public void onFailure(Call call, IOException e) {
+                                Log.e(TAG, "修改口令失败");
+                            }
+
+                            @Override
+                            public void onResponse(Call call, Response response) throws IOException {
+                                Log.i(TAG, "修改口令成功");
                                 runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {
@@ -170,16 +225,19 @@ public class CompileInfoActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 String result = response.body().string();
+                Log.i(TAG, "获取用户详情" + result);
                 try {
                     JSONObject jsonObject = new JSONObject(result);
                     JSONObject data = jsonObject.getJSONObject("data");
                     String id = data.getString("id");
                     final String nikeName = data.getString("nikeName");
                     final String portraitUri = data.getString("portraitUri");
+                    String command = data.getString("command");
                     //将登录成功返回的userId保存
                     Prefs.putString(CompileInfoActivity.this, Prefs.PREF_KEY_NIKE_NAME, nikeName);
                     Prefs.putString(CompileInfoActivity.this, Prefs.PREF_KEY_HEAD_IMAGE_URL, portraitUri);
                     Prefs.putString(CompileInfoActivity.this, Prefs.PREF_KEY_LOGIN_ID, id);
+                    Prefs.putString(CompileInfoActivity.this, Prefs.PREF_KEY_ACCOUNT, command);
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {

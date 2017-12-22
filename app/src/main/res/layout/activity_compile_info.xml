@@ -82,6 +82,7 @@
         android:background="#ebebeb" />
 
     <LinearLayout
+        android:id="@+id/compile_command"
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:gravity="center_vertical">
@@ -91,12 +92,12 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="10dp"
             android:layout_weight="1"
-            android:text="账号(不可修改)"
+            android:text="修改登录账号(口令)"
             android:textColor="#000"
             android:textSize="16sp" />
 
         <TextView
-            android:id="@+id/user_id_text"
+            android:id="@+id/command_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="10dp"
