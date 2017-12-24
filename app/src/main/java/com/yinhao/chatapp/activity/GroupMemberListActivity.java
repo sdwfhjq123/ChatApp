@@ -14,11 +14,8 @@ import android.view.View;
 import com.google.gson.Gson;
 import com.yinhao.chatapp.R;
 import com.yinhao.chatapp.VO.FriendVO;
-import com.yinhao.chatapp.VO.GroupVO;
-import com.yinhao.chatapp.adapter.GroupAdapter;
 import com.yinhao.chatapp.adapter.GroupMemberAdapter;
 import com.yinhao.chatapp.utils.HttpUtils;
-import com.yinhao.chatapp.utils.Prefs;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -57,7 +54,7 @@ public class GroupMemberListActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_group_list);
+        setContentView(R.layout.layout_recycler_view);
 
         mGroupId = getIntent().getStringExtra(GROUP_ID);
 

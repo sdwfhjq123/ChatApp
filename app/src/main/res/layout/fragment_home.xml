@@ -58,6 +58,7 @@
         android:background="#aaa" />
 
     <LinearLayout
+        android:id="@+id/collect_linear_layout"
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:gravity="center_vertical"

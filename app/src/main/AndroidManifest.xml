@@ -153,8 +153,9 @@
         <activity android:name=".activity.AddFriendActivity" />
         <activity android:name=".activity.CompileInfoActivity" />
         <activity android:name=".activity.CompleteInfoActivity" />
-        <activity android:name=".activity.GroupListActivity"></activity>
-        <activity android:name=".activity.GroupMemberListActivity"></activity>
+        <activity android:name=".activity.GroupListActivity" />
+        <activity android:name=".activity.GroupMemberListActivity" />
+        <activity android:name=".activity.MyCollectActivity" />
     </application>
 
 </manifest>

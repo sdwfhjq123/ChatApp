@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<litepal>
+    <dbname value="chat_database"></dbname>
+
+    <version value="1"></version>
+
+    <list>
+        <mapping class="com.yinhao.chatapp.model.Collect"></mapping>
+    </list>
+</litepal>

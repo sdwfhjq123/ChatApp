@@ -18,6 +18,8 @@ import com.yinhao.chatapp.R;
 import com.yinhao.chatapp.activity.CompileInfoActivity;
 import com.yinhao.chatapp.activity.HomeActivity;
 import com.yinhao.chatapp.activity.LoginActivity;
+import com.yinhao.chatapp.activity.MyCollectActivity;
+import com.yinhao.chatapp.model.Collect;
 import com.yinhao.chatapp.utils.CleanMessageUtil;
 import com.yinhao.chatapp.utils.ConstantValue;
 import com.yinhao.chatapp.utils.HttpUtils;
@@ -25,6 +27,7 @@ import com.yinhao.chatapp.utils.Prefs;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.litepal.crud.DataSupport;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -60,10 +63,11 @@ public class HomeFragment extends Fragment {
     private LinearLayout mCompileInfo;
     private CircleImageView mHeadImage;//head_civ
     private TextView mNameText;//name_text
+    private LinearLayout mCollectLinearLayout;
 
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, final Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
 
         //编辑资料
@@ -89,6 +93,8 @@ public class HomeFragment extends Fragment {
                         getActivity().runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
+                                //清空数据库表数据
+                                DataSupport.deleteAll(Collect.class);
                                 Toast.makeText(getActivity(), "清理成功", Toast.LENGTH_SHORT).show();
                             }
                         });
@@ -99,6 +105,16 @@ public class HomeFragment extends Fragment {
 
                     }
                 }, Conversation.ConversationType.PRIVATE, Conversation.ConversationType.GROUP);
+            }
+        });
+
+        mCollectLinearLayout = (LinearLayout) view.findViewById(R.id.collect_linear_layout);
+        //点击打开我的收藏
+        mCollectLinearLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getActivity(), MyCollectActivity.class);
+                startActivity(intent);
             }
         });
 

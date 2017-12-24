@@ -26,10 +26,12 @@ import com.google.gson.Gson;
 import com.yinhao.chatapp.R;
 import com.yinhao.chatapp.VO.GroupMember;
 import com.yinhao.chatapp.VO.User;
+import com.yinhao.chatapp.model.Collect;
 import com.yinhao.chatapp.utils.ConstantValue;
 import com.yinhao.chatapp.utils.HttpUtils;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -148,20 +150,26 @@ public class ConversationActivity extends AppCompatActivity {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 dialog.dismiss();
-                                if (items[0].equals("删除信息")) {
+                                if (items[which].equals("删除信息")) {
+                                    Log.i(TAG, "删除信息");
                                     int[] i = new int[]{message.getMessageId()};
                                     RongIM.getInstance().deleteMessages(i);
-                                } else if (items[1].equals("复制信息")) {
+                                } else if (items[which].equals("复制信息")) {
+                                    Log.i(TAG, "复制信息");
                                     ClipboardManager clipboard = (ClipboardManager) view.getContext().getSystemService(Context.CLIPBOARD_SERVICE);
                                     clipboard.setText(((TextMessage) message.getContent()).getContent());
-                                } else if (items[2].equals("收藏信息")) {
+                                } else if (items[which].equals("收藏信息")) {
+                                    Log.i(TAG, "收藏信息");
                                     //TODO 如果是图片类型，如果是文字类型,进行数据库保存，增，删除单个，删除全部
                                     MessageContent content = message.getContent();
                                     if (content instanceof ImageMessage) {
                                         String s = ((ImageMessage) content).getLocalUri().toString();
+                                        //存储到数据库
+                                        saveData(s, 1);
                                     } else if (content instanceof TextMessage) {
                                         String s = ((TextMessage) content).getContent();
-                                        //fff
+                                        //存储到数据库
+                                        saveData(s, 0);
                                     }
                                 }
                             }
@@ -171,6 +179,21 @@ public class ConversationActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    /**
+     * 将长按的数据保存到数据库
+     *
+     * @param content 内容
+     * @param type    类型，0为文本，1为照片
+     */
+    private void saveData(String content, int type) {
+        Collect collect = new Collect();
+        collect.setUrl(content);
+        collect.setCreateTime(new Date());
+        collect.setType(type);
+        collect.saveThrows();
+        Log.i(TAG, "存储的数据库的ID值: " + collect.getId() + ",数据为: " + collect.getUrl());
     }
 
     @Override
@@ -201,13 +224,5 @@ public class ConversationActivity extends AppCompatActivity {
             }
         });
     }
-
-    /**
-     * 长按消息时
-     * @param context 上下文
-     * @param view 触发点击的 View
-     * @param message 被长按的消息的实体信息
-     * @return
-     */
 
 }
